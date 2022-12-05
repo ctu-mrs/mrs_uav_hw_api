@@ -1,0 +1,7 @@
+version: "1.0.0.0"
+
+hw_interface_plugin: "mrs_uav_px4_api/api"
+
+timers:
+  diagnostics:
+    rate: 100 # [Hz]
