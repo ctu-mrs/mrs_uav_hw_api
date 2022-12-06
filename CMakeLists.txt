@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   mrs_lib
   sensor_msgs
   nav_msgs
+  std_msgs
   )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -23,7 +24,7 @@ set(LIBRARIES
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${LIBRARIES}
-  CATKIN_DEPENDS roscpp nodelet mrs_msgs mrs_lib sensor_msgs nav_msgs
+  CATKIN_DEPENDS roscpp nodelet mrs_msgs mrs_lib sensor_msgs nav_msgs std_msgs
   )
 
 include_directories(
@@ -31,7 +32,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   )
 
-# ControlManager
+# MrsUavHwApi
 
 add_library(MrsUavHwApi
   src/hw_api_manager.cpp

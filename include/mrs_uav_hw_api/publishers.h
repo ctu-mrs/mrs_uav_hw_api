@@ -16,17 +16,24 @@ namespace mrs_uav_hw_api
 
 //}
 
+typedef std::function<void(const sensor_msgs::NavSatFix &msg)>    publishGNSS_t;
+typedef std::function<void(const sensor_msgs::Imu &msg)>          publishIMU_t;
+typedef std::function<void(const sensor_msgs::NavSatStatus &msg)> publishGNSSStatus_t;
+typedef std::function<void(const sensor_msgs::Range &msg)>        publishRange_t;
+typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>  publishAltitude_t;
+typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>  publishMagnetometerHeading_t;
+typedef std::function<void(const nav_msgs::Odometry &msg)>        publishOdometryLocal_t;
+
 struct Publishers_t
 {
-  typedef std::function<bool(const sensor_msgs::Imu &msg)>          publishImu_t;
-  typedef std::function<bool(const sensor_msgs::NavSatFix &msg)>    publishGps_t;
-  typedef std::function<bool(const sensor_msgs::NavSatStatus &msg)> publishGpsStatus_t;
-  typedef std::function<bool(const sensor_msgs::Range &msg)>        publishHeightSensor_t;
-  typedef std::function<bool(const mrs_msgs::Float64Stamped &msg)>  publishAltitude_t;
-  typedef std::function<bool(const mrs_msgs::Float64Stamped &msg)>  publishMagnetometerHeading_t;
-  typedef std::function<bool(const nav_msgs::Odometry &msg)>        publishOdometryLocal_t;
+  publishIMU_t                 publishIMU;
+  publishGNSS_t                publishGNSS;
+  publishGNSSStatus_t          publishGNSSStatus;
+  publishRange_t               publishRange;
+  publishAltitude_t            publishAltitude;
+  publishMagnetometerHeading_t publishMagnetometerHeading;
+  publishOdometryLocal_t       publishOdometryLocal;
 };
-
 
 }  // namespace mrs_uav_hw_api
 

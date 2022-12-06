@@ -5,3 +5,5 @@ hw_interface_plugin: "mrs_uav_px4_api/api"
 timers:
   diagnostics:
     rate: 100 # [Hz]
+  mode:
+    rate: 1 # [Hz]

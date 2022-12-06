@@ -19,9 +19,10 @@
   <depend>mrs_lib</depend>
   <depend>sensor_msgs</depend>
   <depend>nav_msgs</depend>
+  <depend>std_msgs</depend>
 
   <export>
-    <nodelet plugin="${prefix}/plugins.xml" />
+    <nodelet plugin="${prefix}/nodelets.xml" />
   </export>
 
 </package>

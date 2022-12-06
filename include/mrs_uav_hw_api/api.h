@@ -11,6 +11,8 @@
 #include <mrs_msgs/HwApiAttitudeCmd.h>
 #include <mrs_msgs/HwApiAttitudeRateCmd.h>
 #include <mrs_msgs/HwApiTranslationCmd.h>
+#include <mrs_msgs/HwApiDiagnostics.h>
+#include <mrs_msgs/HwApiMode.h>
 
 //}
 
@@ -23,6 +25,9 @@ public:
   virtual ~MrsUavHwApi() = 0;
 
   virtual void initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) = 0;
+
+  virtual mrs_msgs::HwApiDiagnostics getDiagnostics() = 0;
+  virtual mrs_msgs::HwApiMode        getMode()        = 0;
 
   // | --------------------- topic callbacks -------------------- |
 
