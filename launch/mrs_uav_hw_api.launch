@@ -7,6 +7,7 @@
   <!-- other args -->
   <arg name="debug" default="false" />
   <arg name="standalone" default="true" />
+  <arg name="custom_config" default="" />
 
   <env name="ROSCONSOLE_CONFIG_FILE" if="$(eval arg('LOGGER_DEBUG'))" value="$(find mrs_uav_hw_api)/config/debug_verbosity.yaml" />
 
@@ -20,27 +21,36 @@
 
   <group ns="$(arg UAV_NAME)">
 
-    <node pkg="nodelet" type="nodelet" name="mrs_uav_hw_api" args="$(arg nodelet) mrs_uav_hw_api/HwApi $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix)">
+    <node pkg="nodelet" type="nodelet" name="mrs_uav_hw_api" args="$(arg nodelet) mrs_uav_hw_api/HwApiManager $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix)">
 
-      <param name="enable_profiler" type="bool" value="$(arg PROFILER)" />
-      <param name="scope_timer/enabled" type="bool" value="$(arg scope_timer_enabled)" />
-      <param name="scope_timer/log_filename" type="string" value="$(arg scope_timer_log_filename)" />
+      <rosparam file="$(find mrs_uav_hw_api)/config/hw_api.yaml" />
+
+      <!-- Load a user param file -->
+      <rosparam if="$(eval not arg('custom_config') == '')" file="$(arg custom_config)" />
 
       <!-- Parameters -->
-      <param name="frames/fcu_frame_id" type="string" value="$(arg fcu_frame_id)" />
-      <param name="frames/fcu_untilted_frame_id" type="string" value="$(arg fcu_untilted_frame_id)" />
-      <param name="imu_mode" type="bool" value="$(arg imu_mode)" />
+      <param name="topic_prefix" type="string" value="/$(arg UAV_NAME)/" />
 
       <!-- Subscribers -->
-      <remap from="~odom_mavros_in" to="mavros/local_position/odom" />
-      <remap from="~imu_in" to="imu/data" />
+      <remap from="~control_group_cmd_in" to="~control_group_cmd" />
+      <remap from="~attitude_cmd_in" to="~attitude_cmd" />
+      <remap from="~attitude_rate_cmd_in" to="~attitude_rate_cmd" />
+      <remap from="~translation_cmd_in" to="~translation_cmd" />
 
       <!-- Publishers -->
-
-      <!-- Debug publishers -->
-      <remap from="~profiler" to="profiler" />
+      <remap from="~mode_out" to="~mode" />
+      <remap from="~diagnostics_out" to="~diagnostics" />
+      <remap from="~gnss_out" to="~gnss" />
+      <remap from="~gnss_status_out" to="~gnss_status" />
+      <remap from="~odometry_local_out" to="~odometry_local" />
+      <remap from="~range_out" to="~range" />
+      <remap from="~mag_heading_out" to="mag_heading" />
+      <remap from="~altitude_out" to="altitude" />
+      <remap from="~imu_out" to="~imu" />
 
       <!-- Services -->
+      <remap from="~arming_in" to="~arming" />
+      <remap from="~offboard_in" to="~offboard" />
 
     </node>
 

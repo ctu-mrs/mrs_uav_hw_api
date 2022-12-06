@@ -172,7 +172,6 @@ void HwApiManager::onInit() {
 
   sh_attitude_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>(shopts, "attitude_cmd_in", &HwApiManager::callbackAttitudeCmd, this);
 
-
   sh_attitude_rate_cmd_ =
       mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>(shopts, "attitude_rate_cmd_in", &HwApiManager::callbackAttitudeRateCmd, this);
 
@@ -185,7 +184,7 @@ void HwApiManager::onInit() {
 
   ph_gnss_           = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss_out", 1, false, 50);
   ph_gnss_status_    = mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>(nh_, "gnss_status_out", 1, false, 10);
-  ph_odometry_local_ = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry_local", 1, false, 250);
+  ph_odometry_local_ = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry_local_out", 1, false, 250);
   ph_range_          = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "range_out", 1, false, 250);
   ph_mag_heading_    = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading_out", 1, false, 100);
   ph_altitude_       = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "altitude_out", 1, false, 100);
