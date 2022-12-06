@@ -97,6 +97,7 @@ private:
   void publishRange(const sensor_msgs::Range& msg);
   void publishAltitude(const mrs_msgs::Float64Stamped& msg);
   void publishMagnetometerHeading(const mrs_msgs::Float64Stamped& msg);
+  void publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg);
 
   // | ------------------------- timers ------------------------- |
 
@@ -211,6 +212,7 @@ void HwApiManager::onInit() {
   common_handlers_->publishers.publishAltitude            = std::bind(&HwApiManager::publishAltitude, this, std::placeholders::_1);
   common_handlers_->publishers.publishIMU                 = std::bind(&HwApiManager::publishIMU, this, std::placeholders::_1);
   common_handlers_->publishers.publishMagnetometerHeading = std::bind(&HwApiManager::publishMagnetometerHeading, this, std::placeholders::_1);
+  common_handlers_->publishers.publishDiagnostics         = std::bind(&HwApiManager::publishDiagnostics, this, std::placeholders::_1);
 
   // | -------------------- load the plugin -------------------- |
 
@@ -483,6 +485,19 @@ void HwApiManager::publishMagnetometerHeading(const mrs_msgs::Float64Stamped& ms
   }
 
   ph_mag_heading_.publish(msg);
+}
+
+//}
+
+/* publishDiagnostics() //{ */
+
+void HwApiManager::publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_diag_.publish(msg);
 }
 
 //}
