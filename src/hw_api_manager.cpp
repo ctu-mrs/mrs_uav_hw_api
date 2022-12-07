@@ -49,6 +49,7 @@ private:
 
   std::string _plugin_address_;
   std::string _uav_name_;
+  std::string _topic_prefix_;
 
   // | ----------------------- transformer ---------------------- |
 
@@ -142,6 +143,7 @@ void HwApiManager::onInit() {
 
   param_loader.loadParam("hw_interface_plugin", _plugin_address_);
   param_loader.loadParam("uav_name", _uav_name_);
+  param_loader.loadParam("topic_prefix", _topic_prefix_);
   param_loader.loadParam("timers/diagnostics/rate", _timer_diagnostics_rate_);
   param_loader.loadParam("timers/mode/rate", _timer_mode_rate_);
 
@@ -234,7 +236,11 @@ void HwApiManager::onInit() {
 
   // | ------------------ initialize the plugin ----------------- |
 
-  hw_api_->initialize(nh_, common_handlers_);
+  hw_api_->initialize(nh_, common_handlers_, _topic_prefix_, _uav_name_);
+
+  ROS_INFO("[HwApiManager]: initialized");
+
+  is_initialized_ = true;
 }
 
 //}
