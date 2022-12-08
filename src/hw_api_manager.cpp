@@ -282,7 +282,7 @@ void HwApiManager::callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::H
   bool result = hw_api_->callbackAttitudeRateCmd(*msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
+    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'attitude rate' command!");
   }
 }
 
@@ -301,7 +301,7 @@ void HwApiManager::callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
   bool result = hw_api_->callbackAttitudeCmd(*msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
+    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'attitude' command!");
   }
 }
 
@@ -320,7 +320,7 @@ void HwApiManager::callbackTranslationCmd(mrs_lib::SubscribeHandler<mrs_msgs::Hw
   bool result = hw_api_->callbackTranslationCmd(*msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
+    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'translation' command!");
   }
 }
 

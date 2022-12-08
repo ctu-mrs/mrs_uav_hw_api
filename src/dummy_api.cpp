@@ -22,7 +22,7 @@ namespace mrs_uav_hw_api
 class DummyApi : public mrs_uav_hw_api::MrsUavHwApi {
 
 public:
-  ~DummyApi(){};
+  /* ~DummyApi(){}; */
 
   void initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers, const std::string &topic_prefix,
                   const std::string &uav_name);

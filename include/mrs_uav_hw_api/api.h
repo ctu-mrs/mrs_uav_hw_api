@@ -46,6 +46,9 @@ public:
   virtual std::tuple<bool, std::string> callbackOffboard(const bool &request) = 0;
 };
 
+// A pure virtual destructor requires a function body.
+MrsUavHwApi::~MrsUavHwApi(){};
+
 }  // namespace mrs_uav_hw_api
 
 #endif
