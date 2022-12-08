@@ -1,4 +1,4 @@
-#define VERSION "1.0.3.0"
+#define VERSION "1.0.0.0"
 
 /* includes //{ */
 
@@ -13,6 +13,7 @@
 
 #include <mrs_uav_hw_api/api.h>
 #include <mrs_uav_hw_api/publishers.h>
+#include <mrs_uav_hw_api/common_handlers.h>
 
 #include <std_srvs/SetBool.h>
 
@@ -204,6 +205,8 @@ void HwApiManager::onInit() {
 
   // | ---------------- bind the common handlers ---------------- |
 
+  common_handlers_ = std::make_shared<mrs_uav_hw_api::CommonHandlers_t>();
+
   common_handlers_->transformer = transformer_;
 
   common_handlers_->publishers.publishGNSS                = std::bind(&HwApiManager::publishGNSS, this, std::placeholders::_1);
@@ -217,7 +220,7 @@ void HwApiManager::onInit() {
 
   // | -------------------- load the plugin -------------------- |
 
-  plugin_loader_ = std::make_unique<pluginlib::ClassLoader<mrs_uav_hw_api::MrsUavHwApi>>("mrs_uav_hw_api", "mrs_uav_hw_api::HwApiManager");
+  plugin_loader_ = std::make_unique<pluginlib::ClassLoader<mrs_uav_hw_api::MrsUavHwApi>>("mrs_uav_hw_api", "mrs_uav_hw_api::MrsUavHwApi");
 
   try {
     ROS_INFO("[HwApiManager]: loading the plugin '%s'", _plugin_address_.c_str());

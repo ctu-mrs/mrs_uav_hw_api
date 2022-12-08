@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 set(LIBRARIES
-  MrsUavHwApi
+  MrsUavHwApi MrsUAVHwDummyApi
   )
 
 catkin_package(
@@ -49,16 +49,16 @@ target_link_libraries(MrsUavHwApi
 
 # DummyApi
 
-add_library(DummyApi
+add_library(MrsUAVHwDummyApi
   src/dummy_api.cpp
   )
 
-add_dependencies(DummyApi
+add_dependencies(MrsUAVHwDummyApi
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
   )
 
-target_link_libraries(DummyApi
+target_link_libraries(MrsUAVHwDummyApi
   ${catkin_LIBRARIES}
   )
 

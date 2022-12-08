@@ -1,0 +1,5 @@
+<library path="lib/libMrsUAVHwDummyApi">
+  <class name="mrs_uav_hw_api/DummyApi" type="mrs_uav_hw_api::DummyApi" base_class_type="mrs_uav_hw_api::MrsUavHwApi">
+    <description>Dummy MRS UAV HW Api</description>
+  </class>
+</library>

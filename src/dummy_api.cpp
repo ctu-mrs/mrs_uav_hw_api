@@ -14,7 +14,7 @@
 
 //}
 
-namespace mrs_uav_pixhawk_api
+namespace mrs_uav_hw_api
 {
 
 /* class DummyApi //{ */
@@ -26,6 +26,8 @@ public:
 
   void initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers, const std::string &topic_prefix,
                   const std::string &uav_name);
+
+  // | --------------------- status methods --------------------- |
 
   mrs_msgs::HwApiDiagnostics getDiagnostics();
   mrs_msgs::HwApiMode        getMode();
@@ -40,7 +42,6 @@ public:
   // | -------------------- service callbacks ------------------- |
 
   std::tuple<bool, std::string> callbackArming(const bool &request);
-
   std::tuple<bool, std::string> callbackOffboard(const bool &request);
 
 private:
@@ -57,8 +58,8 @@ private:
 
 /* initialize() //{ */
 
-void DummyApi::initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers, const std::string &topic_prefix,
-                          const std::string &uav_name) {
+void DummyApi::initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers,
+                          [[maybe_unused]] const std::string &topic_prefix, [[maybe_unused]] const std::string &uav_name) {
 
   ros::NodeHandle nh_(parent_nh);
 
@@ -82,25 +83,92 @@ void DummyApi::initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_
 
 //}
 
-// | ----------------- main interface methods ----------------- |
+/* getDiagnostics() //{ */
 
 mrs_msgs::HwApiDiagnostics DummyApi::getDiagnostics() {
 
   mrs_msgs::HwApiDiagnostics diag;
 
-  diag.armed = false;
+  diag.stamp = ros::Time::now();
+
+  diag.armed    = false;
   diag.offboard = false;
-  diag.running = false;
+  diag.running  = false;
 
   return diag;
 }
 
+//}
+
+/* getMode() //{ */
+
 mrs_msgs::HwApiMode DummyApi::getMode() {
 
-  mrs_msgs::HwApiDiagnostics diag;
+  mrs_msgs::HwApiMode mode;
+
+  mode.api_name = "DummyApi";
+  mode.stamp    = ros::Time::now();
+
+  return mode;
 }
 
-}  // namespace mrs_uav_pixhawk_api
+//}
+
+/* callbackControlGroupCmd() //{ */
+
+bool DummyApi::callbackControlGroupCmd([[maybe_unused]] const mrs_msgs::HwApiControlGroupCmd &msg) {
+
+  return false;
+}
+
+//}
+
+/* callbackAttitudeRateCmd() //{ */
+
+bool DummyApi::callbackAttitudeRateCmd([[maybe_unused]] const mrs_msgs::HwApiAttitudeRateCmd &msg) {
+
+  return false;
+}
+
+//}
+
+/* callbackAttitudeCmd() //{ */
+
+bool DummyApi::callbackAttitudeCmd([[maybe_unused]] const mrs_msgs::HwApiAttitudeCmd &msg) {
+
+  return false;
+}
+
+//}
+
+/* callbackTranslationCmd() //{ */
+
+bool DummyApi::callbackTranslationCmd([[maybe_unused]] const mrs_msgs::HwApiTranslationCmd &msg) {
+
+  return false;
+}
+
+//}
+
+/* callbackArming() //{ */
+
+std::tuple<bool, std::string> DummyApi::callbackArming([[maybe_unused]] const bool &request) {
+
+  return {false, "Dummy interface does not allow to arm."};
+}
+
+//}
+
+/* callbackOffboard() //{ */
+
+std::tuple<bool, std::string> DummyApi::callbackOffboard([[maybe_unused]] const bool &request) {
+
+  return {false, "Dummy interface does not allow to switch to offboard."};
+}
+
+//}
+
+}  // namespace mrs_uav_hw_api
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mrs_uav_pixhawk_api::DummyApi, mrs_uav_hw_api::MrsUavHwApi)
+PLUGINLIB_EXPORT_CLASS(mrs_uav_hw_api::DummyApi, mrs_uav_hw_api::MrsUavHwApi)

@@ -23,6 +23,7 @@
 
   <export>
     <nodelet plugin="${prefix}/nodelets.xml" />
+    <mrs_uav_hw_api plugin="${prefix}/plugins.xml" />
   </export>
 
 </package>

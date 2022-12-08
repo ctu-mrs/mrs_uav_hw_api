@@ -30,6 +30,7 @@
 
       <!-- Parameters -->
       <param name="topic_prefix" type="string" value="/$(arg UAV_NAME)/" />
+      <param name="uav_name" type="string" value="$(arg UAV_NAME)" />
 
       <!-- Subscribers -->
       <remap from="~control_group_cmd_in" to="~control_group_cmd" />

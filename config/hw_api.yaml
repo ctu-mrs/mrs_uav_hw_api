@@ -1,6 +1,6 @@
 version: "1.0.0.0"
 
-hw_interface_plugin: "mrs_uav_pixhawk_api/api"
+hw_interface_plugin: "mrs_uav_hw_api/DummyApi"
 
 timers:
   diagnostics:
