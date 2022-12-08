@@ -47,6 +47,21 @@ target_link_libraries(MrsUavHwApi
   ${catkin_LIBRARIES}
   )
 
+# DummyApi
+
+add_library(DummyApi
+  src/dummy_api.cpp
+  )
+
+add_dependencies(DummyApi
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+  )
+
+target_link_libraries(DummyApi
+  ${catkin_LIBRARIES}
+  )
+
 ## --------------------------------------------------------------
 ## |                           Install                          |
 ## --------------------------------------------------------------
