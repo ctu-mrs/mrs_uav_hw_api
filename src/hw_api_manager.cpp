@@ -91,6 +91,7 @@ private:
   mrs_lib::PublisherHandler<sensor_msgs::Range>        ph_range_;
   mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>  ph_altitude_;
   mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>  ph_mag_heading_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels> ph_rc_channels_;
 
   void publishGNSS(const sensor_msgs::NavSatFix& msg);
   void publishGNSSStatus(const sensor_msgs::NavSatStatus& msg);
@@ -100,6 +101,7 @@ private:
   void publishAltitude(const mrs_msgs::Float64Stamped& msg);
   void publishMagnetometerHeading(const mrs_msgs::Float64Stamped& msg);
   void publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg);
+  void publishRcChannels(const mrs_msgs::HwApiRcChannels& msg);
 
   // | ------------------------- timers ------------------------- |
 
@@ -192,6 +194,7 @@ void HwApiManager::onInit() {
   ph_mag_heading_    = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading_out", 1, false, 100);
   ph_altitude_       = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "altitude_out", 1, false, 100);
   ph_imu_            = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu_out", 1, false, 500);
+  ph_rc_channels_    = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels_out", 1, false, 100);
 
   // | --------------------- service servers -------------------- |
 
@@ -217,6 +220,7 @@ void HwApiManager::onInit() {
   common_handlers_->publishers.publishIMU                 = std::bind(&HwApiManager::publishIMU, this, std::placeholders::_1);
   common_handlers_->publishers.publishMagnetometerHeading = std::bind(&HwApiManager::publishMagnetometerHeading, this, std::placeholders::_1);
   common_handlers_->publishers.publishDiagnostics         = std::bind(&HwApiManager::publishDiagnostics, this, std::placeholders::_1);
+  common_handlers_->publishers.publishRcChannels          = std::bind(&HwApiManager::publishRcChannels, this, std::placeholders::_1);
 
   // | -------------------- load the plugin -------------------- |
 
@@ -506,6 +510,19 @@ void HwApiManager::publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg) {
   }
 
   ph_diag_.publish(msg);
+}
+
+//}
+
+/* publishRcChannels() //{ */
+
+void HwApiManager::publishRcChannels(const mrs_msgs::HwApiRcChannels& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_rc_channels_.publish(msg);
 }
 
 //}

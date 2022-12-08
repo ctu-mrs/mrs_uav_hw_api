@@ -10,6 +10,7 @@
 #include <mrs_msgs/Float64Stamped.h>
 
 #include <mrs_msgs/HwApiDiagnostics.h>
+#include <mrs_msgs/HwApiRcChannels.h>
 
 #include <nav_msgs/Odometry.h>
 
@@ -26,6 +27,7 @@ typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>   publishAltitu
 typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>   publishMagnetometerHeading_t;
 typedef std::function<void(const nav_msgs::Odometry &msg)>         publishOdometryLocal_t;
 typedef std::function<void(const mrs_msgs::HwApiDiagnostics &msg)> publishDiagnostics_t;
+typedef std::function<void(const mrs_msgs::HwApiRcChannels &msg)>  publishRcChannels_t;
 
 struct Publishers_t
 {
@@ -37,6 +39,7 @@ struct Publishers_t
   publishMagnetometerHeading_t publishMagnetometerHeading;
   publishOdometryLocal_t       publishOdometryLocal;
   publishDiagnostics_t         publishDiagnostics;
+  publishRcChannels_t          publishRcChannels;
 };
 
 }  // namespace mrs_uav_hw_api
