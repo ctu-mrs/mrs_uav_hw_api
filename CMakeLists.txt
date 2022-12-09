@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   nav_msgs
   std_msgs
+  geometry_msgs
   )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -24,7 +25,7 @@ set(LIBRARIES
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${LIBRARIES}
-  CATKIN_DEPENDS roscpp nodelet mrs_msgs mrs_lib sensor_msgs nav_msgs std_msgs
+  CATKIN_DEPENDS roscpp nodelet mrs_msgs mrs_lib sensor_msgs nav_msgs std_msgs geometry_msgs
   )
 
 include_directories(

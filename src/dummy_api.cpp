@@ -91,9 +91,9 @@ mrs_msgs::HwApiDiagnostics DummyApi::getDiagnostics() {
 
   diag.stamp = ros::Time::now();
 
-  diag.armed    = false;
-  diag.offboard = false;
-  diag.running  = false;
+  diag.armed     = false;
+  diag.offboard  = false;
+  diag.connected = false;
 
   return diag;
 }

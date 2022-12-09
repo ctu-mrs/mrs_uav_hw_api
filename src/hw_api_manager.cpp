@@ -17,6 +17,8 @@
 
 #include <std_srvs/SetBool.h>
 
+#include <geometry_msgs/QuaternionStamped.h>
+
 #include <sensor_msgs/NavSatFix.h>
 #include <sensor_msgs/NavSatStatus.h>
 #include <sensor_msgs/Range.h>
@@ -84,14 +86,15 @@ private:
   mrs_lib::PublisherHandler<mrs_msgs::HwApiDiagnostics> ph_diag_;
   mrs_lib::PublisherHandler<mrs_msgs::HwApiMode>        ph_mode_;
 
-  mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>    ph_gnss_;
-  mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus> ph_gnss_status_;
-  mrs_lib::PublisherHandler<nav_msgs::Odometry>        ph_odometry_local_;
-  mrs_lib::PublisherHandler<sensor_msgs::Imu>          ph_imu_;
-  mrs_lib::PublisherHandler<sensor_msgs::Range>        ph_range_;
-  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>  ph_altitude_;
-  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>  ph_mag_heading_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels> ph_rc_channels_;
+  mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>           ph_gnss_;
+  mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>        ph_gnss_status_;
+  mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_odometry_local_;
+  mrs_lib::PublisherHandler<sensor_msgs::Imu>                 ph_imu_;
+  mrs_lib::PublisherHandler<sensor_msgs::Range>               ph_range_;
+  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>         ph_altitude_;
+  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>         ph_mag_heading_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>        ph_rc_channels_;
+  mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped> ph_orientation_;
 
   void publishGNSS(const sensor_msgs::NavSatFix& msg);
   void publishGNSSStatus(const sensor_msgs::NavSatStatus& msg);
@@ -102,6 +105,7 @@ private:
   void publishMagnetometerHeading(const mrs_msgs::Float64Stamped& msg);
   void publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg);
   void publishRcChannels(const mrs_msgs::HwApiRcChannels& msg);
+  void publishOrientation(const geometry_msgs::QuaternionStamped& msg);
 
   // | ------------------------- timers ------------------------- |
 
@@ -195,6 +199,7 @@ void HwApiManager::onInit() {
   ph_altitude_       = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "altitude_out", 1, false, 100);
   ph_imu_            = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu_out", 1, false, 500);
   ph_rc_channels_    = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels_out", 1, false, 100);
+  ph_orientation_    = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation_out", 1, false, 500);
 
   // | --------------------- service servers -------------------- |
 
@@ -221,6 +226,7 @@ void HwApiManager::onInit() {
   common_handlers_->publishers.publishMagnetometerHeading = std::bind(&HwApiManager::publishMagnetometerHeading, this, std::placeholders::_1);
   common_handlers_->publishers.publishDiagnostics         = std::bind(&HwApiManager::publishDiagnostics, this, std::placeholders::_1);
   common_handlers_->publishers.publishRcChannels          = std::bind(&HwApiManager::publishRcChannels, this, std::placeholders::_1);
+  common_handlers_->publishers.publishOrientation         = std::bind(&HwApiManager::publishOrientation, this, std::placeholders::_1);
 
   // | -------------------- load the plugin -------------------- |
 
@@ -523,6 +529,19 @@ void HwApiManager::publishRcChannels(const mrs_msgs::HwApiRcChannels& msg) {
   }
 
   ph_rc_channels_.publish(msg);
+}
+
+//}
+
+/* publishOrientation() //{ */
+
+void HwApiManager::publishOrientation(const geometry_msgs::QuaternionStamped& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_orientation_.publish(msg);
 }
 
 //}
