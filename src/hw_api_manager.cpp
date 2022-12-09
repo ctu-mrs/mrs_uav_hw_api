@@ -16,6 +16,7 @@
 #include <mrs_uav_hw_api/common_handlers.h>
 
 #include <std_srvs/SetBool.h>
+#include <std_srvs/Trigger.h>
 
 #include <geometry_msgs/QuaternionStamped.h>
 
@@ -121,7 +122,7 @@ private:
   ros::ServiceServer ss_offboard_;
 
   bool callbackArming(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
-  bool callbackOffboard(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
+  bool callbackOffboard(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
 
   // | ----------------------- publishers ----------------------- |
 };
@@ -360,15 +361,15 @@ bool HwApiManager::callbackArming(std_srvs::SetBool::Request& req, std_srvs::Set
 
 /* callbackOffboard() //{ */
 
-bool HwApiManager::callbackOffboard(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res) {
+bool HwApiManager::callbackOffboard([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
 
   if (!is_initialized_) {
     return false;
   }
 
-  ROS_INFO("[HwApiManager]: offboard %s", req.data ? "on" : "off");
+  ROS_INFO("[HwApiManager]: switching to offboard");
 
-  auto [success, message] = hw_api_->callbackOffboard(req.data);
+  auto [success, message] = hw_api_->callbackOffboard();
 
   res.success = success;
   res.message = message;

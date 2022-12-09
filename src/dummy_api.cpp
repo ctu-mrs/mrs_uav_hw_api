@@ -42,7 +42,7 @@ public:
   // | -------------------- service callbacks ------------------- |
 
   std::tuple<bool, std::string> callbackArming(const bool &request);
-  std::tuple<bool, std::string> callbackOffboard(const bool &request);
+  std::tuple<bool, std::string> callbackOffboard(void);
 
 private:
   bool is_initialized_ = false;
@@ -161,7 +161,7 @@ std::tuple<bool, std::string> DummyApi::callbackArming([[maybe_unused]] const bo
 
 /* callbackOffboard() //{ */
 
-std::tuple<bool, std::string> DummyApi::callbackOffboard([[maybe_unused]] const bool &request) {
+std::tuple<bool, std::string> DummyApi::callbackOffboard(void) {
 
   return {false, "Dummy interface does not allow to switch to offboard."};
 }

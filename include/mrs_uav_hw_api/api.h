@@ -43,7 +43,7 @@ public:
 
   virtual std::tuple<bool, std::string> callbackArming(const bool &request) = 0;
 
-  virtual std::tuple<bool, std::string> callbackOffboard(const bool &request) = 0;
+  virtual std::tuple<bool, std::string> callbackOffboard(void) = 0;
 };
 
 // A pure virtual destructor requires a function body.
