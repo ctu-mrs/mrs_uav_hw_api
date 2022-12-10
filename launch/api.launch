@@ -21,7 +21,7 @@
 
   <group ns="$(arg UAV_NAME)">
 
-    <node pkg="nodelet" type="nodelet" name="mrs_uav_hw_api" args="$(arg nodelet) mrs_uav_hw_api/HwApiManager $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix)">
+    <node pkg="nodelet" type="nodelet" name="hw_api" args="$(arg nodelet) mrs_uav_hw_api/HwApiManager $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix)">
 
       <rosparam file="$(find mrs_uav_hw_api)/config/hw_api.yaml" />
 
@@ -44,7 +44,7 @@
       <remap from="~gnss_out" to="~gnss" />
       <remap from="~gnss_status_out" to="~gnss_status" />
       <remap from="~odometry_local_out" to="~odometry_local" />
-      <remap from="~range_out" to="~range" />
+      <remap from="~distance_sensor_out" to="~distance_sensor" />
       <remap from="~mag_heading_out" to="mag_heading" />
       <remap from="~altitude_out" to="altitude" />
       <remap from="~imu_out" to="~imu" />

@@ -10,7 +10,9 @@
 #include <mrs_msgs/HwApiControlGroupCmd.h>
 #include <mrs_msgs/HwApiAttitudeCmd.h>
 #include <mrs_msgs/HwApiAttitudeRateCmd.h>
-#include <mrs_msgs/HwApiTranslationCmd.h>
+#include <mrs_msgs/HwApiPositionCmd.h>
+#include <mrs_msgs/HwApiVelocityCmd.h>
+#include <mrs_msgs/HwApiAccelerationCmd.h>
 #include <mrs_msgs/HwApiDiagnostics.h>
 #include <mrs_msgs/HwApiMode.h>
 
@@ -24,7 +26,8 @@ class MrsUavHwApi {
 public:
   virtual ~MrsUavHwApi() = 0;
 
-  virtual void initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers, const std::string &topic_prefix, const std::string &uav_name) = 0;
+  virtual void initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers, const std::string &topic_prefix,
+                          const std::string &uav_name) = 0;
 
   virtual mrs_msgs::HwApiDiagnostics getDiagnostics() = 0;
   virtual mrs_msgs::HwApiMode        getMode()        = 0;
@@ -37,7 +40,11 @@ public:
 
   virtual bool callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd &msg) = 0;
 
-  virtual bool callbackTranslationCmd(const mrs_msgs::HwApiTranslationCmd &msg) = 0;
+  virtual bool callbackAccelerationCmd(const mrs_msgs::HwApiAccelerationCmd &msg) = 0;
+
+  virtual bool callbackVelocityCmd(const mrs_msgs::HwApiVelocityCmd &msg) = 0;
+
+  virtual bool callbackPositionCmd(const mrs_msgs::HwApiPositionCmd &msg) = 0;
 
   // | -------------------- service callbacks ------------------- |
 

@@ -37,7 +37,9 @@ public:
   bool callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd &msg);
   bool callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd &msg);
   bool callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd &msg);
-  bool callbackTranslationCmd(const mrs_msgs::HwApiTranslationCmd &msg);
+  bool callbackAccelerationCmd(const mrs_msgs::HwApiAccelerationCmd &msg);
+  bool callbackVelocityCmd(const mrs_msgs::HwApiVelocityCmd &msg);
+  bool callbackPositionCmd(const mrs_msgs::HwApiPositionCmd &msg);
 
   // | -------------------- service callbacks ------------------- |
 
@@ -141,9 +143,27 @@ bool DummyApi::callbackAttitudeCmd([[maybe_unused]] const mrs_msgs::HwApiAttitud
 
 //}
 
-/* callbackTranslationCmd() //{ */
+/* callbackAccelerationCmd() //{ */
 
-bool DummyApi::callbackTranslationCmd([[maybe_unused]] const mrs_msgs::HwApiTranslationCmd &msg) {
+bool DummyApi::callbackAccelerationCmd([[maybe_unused]] const mrs_msgs::HwApiAccelerationCmd &msg) {
+
+  return false;
+}
+
+//}
+
+/* callbackVelocityCmd() //{ */
+
+bool DummyApi::callbackVelocityCmd([[maybe_unused]] const mrs_msgs::HwApiVelocityCmd &msg) {
+
+  return false;
+}
+
+//}
+
+/* callbackPositionCmd() //{ */
+
+bool DummyApi::callbackPositionCmd([[maybe_unused]] const mrs_msgs::HwApiPositionCmd &msg) {
 
   return false;
 }
