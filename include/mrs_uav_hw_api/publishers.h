@@ -12,6 +12,8 @@
 #include <mrs_msgs/HwApiDiagnostics.h>
 #include <mrs_msgs/HwApiRcChannels.h>
 
+#include <mrs_msgs/HwApiAltitude.h>
+
 #include <nav_msgs/Odometry.h>
 
 #include <geometry_msgs/QuaternionStamped.h>
@@ -25,7 +27,7 @@ typedef std::function<void(const sensor_msgs::NavSatFix &msg)>           publish
 typedef std::function<void(const sensor_msgs::Imu &msg)>                 publishIMU_t;
 typedef std::function<void(const sensor_msgs::NavSatStatus &msg)>        publishGNSSStatus_t;
 typedef std::function<void(const sensor_msgs::Range &msg)>               publishDistanceSensor_t;
-typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>         publishAltitude_t;
+typedef std::function<void(const mrs_msgs::HwApiAltitude &msg)>          publishAltitude_t;
 typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>         publishMagnetometerHeading_t;
 typedef std::function<void(const nav_msgs::Odometry &msg)>               publishOdometryLocal_t;
 typedef std::function<void(const mrs_msgs::HwApiDiagnostics &msg)>       publishDiagnostics_t;

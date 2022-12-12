@@ -96,7 +96,7 @@ private:
   mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_odometry_local_;
   mrs_lib::PublisherHandler<sensor_msgs::Imu>                 ph_imu_;
   mrs_lib::PublisherHandler<sensor_msgs::Range>               ph_distance_sensor_;
-  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>         ph_altitude_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>          ph_altitude_;
   mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>         ph_mag_heading_;
   mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>        ph_rc_channels_;
   mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped> ph_orientation_;
@@ -106,7 +106,7 @@ private:
   void publishOdometryLocal(const nav_msgs::Odometry& msg);
   void publishIMU(const sensor_msgs::Imu& msg);
   void publishDistanceSensor(const sensor_msgs::Range& msg);
-  void publishAltitude(const mrs_msgs::Float64Stamped& msg);
+  void publishAltitude(const mrs_msgs::HwApiAltitude& msg);
   void publishMagnetometerHeading(const mrs_msgs::Float64Stamped& msg);
   void publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg);
   void publishRcChannels(const mrs_msgs::HwApiRcChannels& msg);
@@ -205,7 +205,7 @@ void HwApiManager::onInit() {
   ph_odometry_local_  = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry_local_out", 1, false, 250);
   ph_distance_sensor_ = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor_out", 1, false, 250);
   ph_mag_heading_     = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading_out", 1, false, 100);
-  ph_altitude_        = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "altitude_out", 1, false, 100);
+  ph_altitude_        = mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>(nh_, "altitude_out", 1, false, 100);
   ph_imu_             = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu_out", 1, false, 500);
   ph_rc_channels_     = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels_out", 1, false, 100);
   ph_orientation_     = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation_out", 1, false, 500);
@@ -530,7 +530,7 @@ void HwApiManager::publishDistanceSensor(const sensor_msgs::Range& msg) {
 
 /* publishAltitude() //{ */
 
-void HwApiManager::publishAltitude(const mrs_msgs::Float64Stamped& msg) {
+void HwApiManager::publishAltitude(const mrs_msgs::HwApiAltitude& msg) {
 
   if (!is_initialized_) {
     return;
