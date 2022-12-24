@@ -100,6 +100,7 @@ private:
   mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>         ph_mag_heading_;
   mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>        ph_rc_channels_;
   mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped> ph_orientation_;
+  mrs_lib::PublisherHandler<sensor_msgs::BatteryState>        ph_battery_state_;
 
   void publishGNSS(const sensor_msgs::NavSatFix& msg);
   void publishGNSSStatus(const sensor_msgs::NavSatStatus& msg);
@@ -111,6 +112,7 @@ private:
   void publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg);
   void publishRcChannels(const mrs_msgs::HwApiRcChannels& msg);
   void publishOrientation(const geometry_msgs::QuaternionStamped& msg);
+  void publishBatteryState(const sensor_msgs::BatteryState& msg);
 
   // | ------------------------- timers ------------------------- |
 
@@ -209,6 +211,7 @@ void HwApiManager::onInit() {
   ph_imu_             = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu_out", 1, false, 500);
   ph_rc_channels_     = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels_out", 1, false, 100);
   ph_orientation_     = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation_out", 1, false, 500);
+  ph_battery_state_   = mrs_lib::PublisherHandler<sensor_msgs::BatteryState>(nh_, "battery_state_out", 1, false, 100);
 
   // | --------------------- service servers -------------------- |
 
@@ -236,6 +239,7 @@ void HwApiManager::onInit() {
   common_handlers_->publishers.publishDiagnostics         = std::bind(&HwApiManager::publishDiagnostics, this, std::placeholders::_1);
   common_handlers_->publishers.publishRcChannels          = std::bind(&HwApiManager::publishRcChannels, this, std::placeholders::_1);
   common_handlers_->publishers.publishOrientation         = std::bind(&HwApiManager::publishOrientation, this, std::placeholders::_1);
+  common_handlers_->publishers.publishBatteryState        = std::bind(&HwApiManager::publishBatteryState, this, std::placeholders::_1);
 
   // | -------------------- load the plugin -------------------- |
 
@@ -589,6 +593,19 @@ void HwApiManager::publishOrientation(const geometry_msgs::QuaternionStamped& ms
   }
 
   ph_orientation_.publish(msg);
+}
+
+//}
+
+/* publishBatteryState() //{ */
+
+void HwApiManager::publishBatteryState(const sensor_msgs::BatteryState& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_battery_state_.publish(msg);
 }
 
 //}

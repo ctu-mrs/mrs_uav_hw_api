@@ -51,6 +51,7 @@
       <remap from="~altitude_out" to="~altitude" />
       <remap from="~imu_out" to="~imu" />
       <remap from="~rc_channels_out" to="~rc_channels" />
+      <remap from="~battery_state_out" to="~battery_state" />
 
       <!-- Services -->
       <remap from="~arming_in" to="~arming" />

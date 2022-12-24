@@ -33,6 +33,7 @@ typedef std::function<void(const nav_msgs::Odometry &msg)>               publish
 typedef std::function<void(const mrs_msgs::HwApiDiagnostics &msg)>       publishDiagnostics_t;
 typedef std::function<void(const mrs_msgs::HwApiRcChannels &msg)>        publishRcChannels_t;
 typedef std::function<void(const geometry_msgs::QuaternionStamped &msg)> publishOrientation_t;
+typedef std::function<void(const sensor_msgs::BatteryState &msg)>        publishBatteryState_t;
 
 struct Publishers_t
 {
@@ -46,6 +47,7 @@ struct Publishers_t
   publishDiagnostics_t         publishDiagnostics;
   publishRcChannels_t          publishRcChannels;
   publishOrientation_t         publishOrientation;
+  publishBatteryState_t        publishBatteryState;
 };
 
 }  // namespace mrs_uav_hw_api
