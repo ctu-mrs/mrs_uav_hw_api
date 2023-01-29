@@ -72,6 +72,7 @@ private:
 
   // | ----------------------- subscribers ---------------------- |
 
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>     sh_actuator_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd> sh_control_group_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd> sh_attitude_rate_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>     sh_attitude_cmd_;
@@ -79,6 +80,7 @@ private:
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityCmd>     sh_velocity_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationCmd> sh_acceleration_cmd_;
 
+  void callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp);
   void callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp);
   void callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>& wrp);
   void callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>& wrp);
@@ -183,6 +185,8 @@ void HwApiManager::onInit() {
   shopts.queue_size         = 10;
   shopts.transport_hints    = ros::TransportHints().tcpNoDelay();
 
+  sh_actuator_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>(shopts, "actuator_cmd_in", &HwApiManager::callbackActuatorCmd, this);
+
   sh_control_group_cmd_ =
       mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>(shopts, "control_group_cmd_in", &HwApiManager::callbackControlGroupCmd, this);
 
@@ -273,6 +277,23 @@ void HwApiManager::onInit() {
 
 // | --------------------- topic callbacks -------------------- |
 
+/* callbackActuatorCmd() //{ */
+
+void HwApiManager::callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  bool result = hw_api_->callbackActuatorCmd(wrp);
+
+  if (!result) {
+    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
+  }
+}
+
+//}
+
 /* callbackControlGroupCmd() //{ */
 
 void HwApiManager::callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp) {
@@ -281,9 +302,7 @@ void HwApiManager::callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::H
     return;
   }
 
-  auto msg = wrp.getMsg();
-
-  bool result = hw_api_->callbackControlGroupCmd(*msg);
+  bool result = hw_api_->callbackControlGroupCmd(wrp);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
@@ -300,9 +319,7 @@ void HwApiManager::callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::H
     return;
   }
 
-  auto msg = wrp.getMsg();
-
-  bool result = hw_api_->callbackAttitudeRateCmd(*msg);
+  bool result = hw_api_->callbackAttitudeRateCmd(wrp);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'attitude rate' command!");
@@ -319,9 +336,7 @@ void HwApiManager::callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
     return;
   }
 
-  auto msg = wrp.getMsg();
-
-  bool result = hw_api_->callbackAttitudeCmd(*msg);
+  bool result = hw_api_->callbackAttitudeCmd(wrp);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'attitude' command!");
@@ -338,9 +353,7 @@ void HwApiManager::callbackAccelerationCmd(mrs_lib::SubscribeHandler<mrs_msgs::H
     return;
   }
 
-  auto msg = wrp.getMsg();
-
-  bool result = hw_api_->callbackAccelerationCmd(*msg);
+  bool result = hw_api_->callbackAccelerationCmd(wrp);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'acceleration' command!");
@@ -357,9 +370,7 @@ void HwApiManager::callbackVelocityCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
     return;
   }
 
-  auto msg = wrp.getMsg();
-
-  bool result = hw_api_->callbackVelocityCmd(*msg);
+  bool result = hw_api_->callbackVelocityCmd(wrp);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'velocity' command!");
@@ -376,9 +387,7 @@ void HwApiManager::callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
     return;
   }
 
-  auto msg = wrp.getMsg();
-
-  bool result = hw_api_->callbackPositionCmd(*msg);
+  bool result = hw_api_->callbackPositionCmd(wrp);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'position' command!");
