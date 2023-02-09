@@ -33,6 +33,7 @@
       <param name="uav_name" type="string" value="$(arg UAV_NAME)" />
 
       <!-- Subscribers -->
+      <remap from="~actuators_cmd_in" to="~actuators_cmd" />
       <remap from="~control_group_cmd_in" to="~control_group_cmd" />
       <remap from="~attitude_cmd_in" to="~attitude_cmd" />
       <remap from="~attitude_rate_cmd_in" to="~attitude_rate_cmd" />
