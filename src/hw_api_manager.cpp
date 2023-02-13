@@ -72,21 +72,25 @@ private:
 
   // | ----------------------- subscribers ---------------------- |
 
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>     sh_actuator_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd> sh_control_group_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd> sh_attitude_rate_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>     sh_attitude_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>     sh_position_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityCmd>     sh_velocity_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationCmd> sh_acceleration_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>            sh_actuator_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>        sh_control_group_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>        sh_attitude_rate_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>            sh_attitude_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd> sh_acceleration_hdg_rate_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>     sh_acceleration_hdg_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>     sh_velocity_hdg_rate_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>         sh_velocity_hdg_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>            sh_position_cmd_;
 
   void callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp);
   void callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp);
   void callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>& wrp);
   void callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>& wrp);
+  void callbackAccelerationHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>& wrp);
+  void callbackAccelerationHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>& wrp);
+  void callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp);
+  void callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp);
   void callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp);
-  void callbackVelocityCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityCmd>& wrp);
-  void callbackAccelerationCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationCmd>& wrp);
 
   // | ----------------------- publishers ----------------------- |
 
@@ -195,11 +199,18 @@ void HwApiManager::onInit() {
   sh_attitude_rate_cmd_ =
       mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>(shopts, "attitude_rate_cmd_in", &HwApiManager::callbackAttitudeRateCmd, this);
 
+  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>(shopts, "acceleration_hdg_rate_cmd_in",
+                                                                                                   &HwApiManager::callbackAccelerationHdgRateCmd, this);
+
+  sh_acceleration_hdg_cmd_ =
+      mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>(shopts, "acceleration_hdg_cmd_in", &HwApiManager::callbackAccelerationHdgCmd, this);
+
+  sh_velocity_hdg_rate_cmd_ =
+      mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>(shopts, "velocity_hdg_rate_cmd_in", &HwApiManager::callbackVelocityHdgRateCmd, this);
+
+  sh_velocity_hdg_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>(shopts, "velocity_hdg_cmd_in", &HwApiManager::callbackVelocityHdgCmd, this);
+
   sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>(shopts, "position_cmd_in", &HwApiManager::callbackPositionCmd, this);
-
-  sh_acceleration_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationCmd>(shopts, "acceleration_cmd_in", &HwApiManager::callbackAccelerationCmd, this);
-
-  sh_velocity_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityCmd>(shopts, "velocity_cmd_in", &HwApiManager::callbackVelocityCmd, this);
 
   // | ----------------------- publishers ----------------------- |
 
@@ -345,35 +356,69 @@ void HwApiManager::callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
 
 //}
 
-/* callbackAccelerationCmd() //{ */
+/* callbackAccelerationHdgRateCmd() //{ */
 
-void HwApiManager::callbackAccelerationCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationCmd>& wrp) {
+void HwApiManager::callbackAccelerationHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>& wrp) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackAccelerationCmd(wrp);
+  bool result = hw_api_->callbackAccelerationHdgRateCmd(wrp);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'acceleration' command!");
+    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'acceleration+hdg rate' command!");
   }
 }
 
 //}
 
-/* callbackVelocityCmd() //{ */
+/* callbackAccelerationHdgCmd() //{ */
 
-void HwApiManager::callbackVelocityCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityCmd>& wrp) {
+void HwApiManager::callbackAccelerationHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>& wrp) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackVelocityCmd(wrp);
+  bool result = hw_api_->callbackAccelerationHdgCmd(wrp);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'velocity' command!");
+    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'acceleration+hdg' command!");
+  }
+}
+
+//}
+
+/* callbackVelocityHdgRateCmd() //{ */
+
+void HwApiManager::callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  bool result = hw_api_->callbackVelocityHdgRateCmd(wrp);
+
+  if (!result) {
+    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'velocity+hdg rate' command!");
+  }
+}
+
+//}
+
+/* callbackVelocityHdgCmd() //{ */
+
+void HwApiManager::callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  bool result = hw_api_->callbackVelocityHdgCmd(wrp);
+
+  if (!result) {
+    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'velocity+hdg' command!");
   }
 }
 

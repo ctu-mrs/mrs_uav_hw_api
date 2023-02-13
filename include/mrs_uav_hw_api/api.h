@@ -13,9 +13,11 @@
 #include <mrs_msgs/HwApiControlGroupCmd.h>
 #include <mrs_msgs/HwApiAttitudeCmd.h>
 #include <mrs_msgs/HwApiAttitudeRateCmd.h>
+#include <mrs_msgs/HwApiAccelerationHdgRateCmd.h>
+#include <mrs_msgs/HwApiAccelerationHdgCmd.h>
+#include <mrs_msgs/HwApiVelocityHdgRateCmd.h>
+#include <mrs_msgs/HwApiVelocityHdgCmd.h>
 #include <mrs_msgs/HwApiPositionCmd.h>
-#include <mrs_msgs/HwApiVelocityCmd.h>
-#include <mrs_msgs/HwApiAccelerationCmd.h>
 #include <mrs_msgs/HwApiDiagnostics.h>
 #include <mrs_msgs/HwApiMode.h>
 
@@ -45,9 +47,13 @@ public:
 
   virtual bool callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>& wrp) = 0;
 
-  virtual bool callbackAccelerationCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationCmd>& wrp) = 0;
+  virtual bool callbackAccelerationHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>& wrp) = 0;
 
-  virtual bool callbackVelocityCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityCmd>& wrp) = 0;
+  virtual bool callbackAccelerationHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>& wrp) = 0;
+
+  virtual bool callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp) = 0;
+
+  virtual bool callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp) = 0;
 
   virtual bool callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp) = 0;
 
