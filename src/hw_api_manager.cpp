@@ -94,30 +94,37 @@ private:
 
   // | ----------------------- publishers ----------------------- |
 
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiDiagnostics> ph_diag_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiMode>        ph_mode_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>       ph_status_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities> ph_capabilities_;
 
-  mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>           ph_gnss_;
-  mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>        ph_gnss_status_;
-  mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_odometry_local_;
-  mrs_lib::PublisherHandler<sensor_msgs::Imu>                 ph_imu_;
-  mrs_lib::PublisherHandler<sensor_msgs::Range>               ph_distance_sensor_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>          ph_altitude_;
-  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>         ph_mag_heading_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>        ph_rc_channels_;
+  mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>    ph_gnss_;
+  mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus> ph_gnss_status_;
+  mrs_lib::PublisherHandler<sensor_msgs::Imu>          ph_imu_;
+  mrs_lib::PublisherHandler<sensor_msgs::Range>        ph_distance_sensor_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>   ph_altitude_;
+  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>  ph_mag_heading_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels> ph_rc_channels_;
+  mrs_lib::PublisherHandler<sensor_msgs::BatteryState> ph_battery_state_;
+
+  mrs_lib::PublisherHandler<geometry_msgs::PointStamped>      ph_position_;
+  mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>    ph_velocity_;
   mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped> ph_orientation_;
-  mrs_lib::PublisherHandler<sensor_msgs::BatteryState>        ph_battery_state_;
+  mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>    ph_angular_velocity_;
+  mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_odometry_;
 
   void publishGNSS(const sensor_msgs::NavSatFix& msg);
   void publishGNSSStatus(const sensor_msgs::NavSatStatus& msg);
-  void publishOdometryLocal(const nav_msgs::Odometry& msg);
+  void publishOdometry(const nav_msgs::Odometry& msg);
   void publishIMU(const sensor_msgs::Imu& msg);
   void publishDistanceSensor(const sensor_msgs::Range& msg);
   void publishAltitude(const mrs_msgs::HwApiAltitude& msg);
   void publishMagnetometerHeading(const mrs_msgs::Float64Stamped& msg);
-  void publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg);
+  void publishStatus(const mrs_msgs::HwApiStatus& msg);
   void publishRcChannels(const mrs_msgs::HwApiRcChannels& msg);
   void publishOrientation(const geometry_msgs::QuaternionStamped& msg);
+  void publishPosition(const geometry_msgs::PointStamped& msg);
+  void publishVelocity(const geometry_msgs::Vector3Stamped& msg);
+  void publishAngularVelocity(const geometry_msgs::Vector3Stamped& msg);
   void publishBatteryState(const sensor_msgs::BatteryState& msg);
 
   // | ------------------------- timers ------------------------- |
@@ -214,19 +221,23 @@ void HwApiManager::onInit() {
 
   // | ----------------------- publishers ----------------------- |
 
-  ph_mode_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiMode>(nh_, "mode_out", 1);
-  ph_diag_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiDiagnostics>(nh_, "diagnostics_out", 1);
+  ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities_out", 1);
+  ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status_out", 1);
 
   ph_gnss_            = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss_out", 1, false, 50);
   ph_gnss_status_     = mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>(nh_, "gnss_status_out", 1, false, 10);
-  ph_odometry_local_  = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry_local_out", 1, false, 250);
   ph_distance_sensor_ = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor_out", 1, false, 250);
   ph_mag_heading_     = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading_out", 1, false, 100);
   ph_altitude_        = mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>(nh_, "altitude_out", 1, false, 100);
   ph_imu_             = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu_out", 1, false, 500);
   ph_rc_channels_     = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels_out", 1, false, 100);
-  ph_orientation_     = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation_out", 1, false, 500);
   ph_battery_state_   = mrs_lib::PublisherHandler<sensor_msgs::BatteryState>(nh_, "battery_state_out", 1, false, 100);
+
+  ph_position_         = mrs_lib::PublisherHandler<geometry_msgs::PointStamped>(nh_, "position_out", 1, false, 250);
+  ph_orientation_      = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation_out", 1, false, 250);
+  ph_velocity_         = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "velocity_out", 1, false, 250);
+  ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "angular_velocity_out", 1, false, 500);
+  ph_odometry_         = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry_out", 1, false, 250);
 
   // | --------------------- service servers -------------------- |
 
@@ -246,15 +257,19 @@ void HwApiManager::onInit() {
 
   common_handlers_->publishers.publishGNSS                = std::bind(&HwApiManager::publishGNSS, this, std::placeholders::_1);
   common_handlers_->publishers.publishGNSSStatus          = std::bind(&HwApiManager::publishGNSSStatus, this, std::placeholders::_1);
-  common_handlers_->publishers.publishOdometryLocal       = std::bind(&HwApiManager::publishOdometryLocal, this, std::placeholders::_1);
   common_handlers_->publishers.publishDistanceSensor      = std::bind(&HwApiManager::publishDistanceSensor, this, std::placeholders::_1);
   common_handlers_->publishers.publishAltitude            = std::bind(&HwApiManager::publishAltitude, this, std::placeholders::_1);
   common_handlers_->publishers.publishIMU                 = std::bind(&HwApiManager::publishIMU, this, std::placeholders::_1);
   common_handlers_->publishers.publishMagnetometerHeading = std::bind(&HwApiManager::publishMagnetometerHeading, this, std::placeholders::_1);
-  common_handlers_->publishers.publishDiagnostics         = std::bind(&HwApiManager::publishDiagnostics, this, std::placeholders::_1);
+  common_handlers_->publishers.publishStatus              = std::bind(&HwApiManager::publishStatus, this, std::placeholders::_1);
   common_handlers_->publishers.publishRcChannels          = std::bind(&HwApiManager::publishRcChannels, this, std::placeholders::_1);
-  common_handlers_->publishers.publishOrientation         = std::bind(&HwApiManager::publishOrientation, this, std::placeholders::_1);
   common_handlers_->publishers.publishBatteryState        = std::bind(&HwApiManager::publishBatteryState, this, std::placeholders::_1);
+
+  common_handlers_->publishers.publishPosition        = std::bind(&HwApiManager::publishPosition, this, std::placeholders::_1);
+  common_handlers_->publishers.publishOrientation     = std::bind(&HwApiManager::publishOrientation, this, std::placeholders::_1);
+  common_handlers_->publishers.publishVelocity        = std::bind(&HwApiManager::publishVelocity, this, std::placeholders::_1);
+  common_handlers_->publishers.publishAngularVelocity = std::bind(&HwApiManager::publishAngularVelocity, this, std::placeholders::_1);
+  common_handlers_->publishers.publishOdometry        = std::bind(&HwApiManager::publishOdometry, this, std::placeholders::_1);
 
   // | -------------------- load the plugin -------------------- |
 
@@ -495,9 +510,9 @@ void HwApiManager::timerDiagnostics([[maybe_unused]] const ros::TimerEvent& even
 
   ROS_INFO_ONCE("[HwApiManager]: timerDiagnostics() spinning");
 
-  mrs_msgs::HwApiDiagnostics diag = hw_api_->getDiagnostics();
+  mrs_msgs::HwApiStatus diag = hw_api_->getStatus();
 
-  ph_diag_.publish(diag);
+  ph_status_.publish(diag);
 }
 
 //}
@@ -510,11 +525,11 @@ void HwApiManager::timerMode([[maybe_unused]] const ros::TimerEvent& event) {
     return;
   }
 
-  ROS_INFO_ONCE("[HwApiManager]: timerMode() spinning");
+  ROS_INFO_ONCE("[HwApiManager]: timerCapabilities() spinning");
 
-  mrs_msgs::HwApiMode diag = hw_api_->getMode();
+  mrs_msgs::HwApiCapabilities diag = hw_api_->getCapabilities();
 
-  ph_mode_.publish(diag);
+  ph_capabilities_.publish(diag);
 }
 
 //}
@@ -543,19 +558,6 @@ void HwApiManager::publishGNSSStatus(const sensor_msgs::NavSatStatus& msg) {
   }
 
   ph_gnss_status_.publish(msg);
-}
-
-//}
-
-/* publishOdometryLocal() //{ */
-
-void HwApiManager::publishOdometryLocal(const nav_msgs::Odometry& msg) {
-
-  if (!is_initialized_) {
-    return;
-  }
-
-  ph_odometry_local_.publish(msg);
 }
 
 //}
@@ -612,15 +614,15 @@ void HwApiManager::publishMagnetometerHeading(const mrs_msgs::Float64Stamped& ms
 
 //}
 
-/* publishDiagnostics() //{ */
+/* publishStatus() //{ */
 
-void HwApiManager::publishDiagnostics(const mrs_msgs::HwApiDiagnostics& msg) {
+void HwApiManager::publishStatus(const mrs_msgs::HwApiStatus& msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  ph_diag_.publish(msg);
+  ph_status_.publish(msg);
 }
 
 //}
@@ -638,6 +640,19 @@ void HwApiManager::publishRcChannels(const mrs_msgs::HwApiRcChannels& msg) {
 
 //}
 
+/* publishPosition() //{ */
+
+void HwApiManager::publishPosition(const geometry_msgs::PointStamped& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_position_.publish(msg);
+}
+
+//}
+
 /* publishOrientation() //{ */
 
 void HwApiManager::publishOrientation(const geometry_msgs::QuaternionStamped& msg) {
@@ -647,6 +662,45 @@ void HwApiManager::publishOrientation(const geometry_msgs::QuaternionStamped& ms
   }
 
   ph_orientation_.publish(msg);
+}
+
+//}
+
+/* publishVelocity() //{ */
+
+void HwApiManager::publishVelocity(const geometry_msgs::Vector3Stamped& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_velocity_.publish(msg);
+}
+
+//}
+
+/* publishAngularVelocity() //{ */
+
+void HwApiManager::publishAngularVelocity(const geometry_msgs::Vector3Stamped& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_angular_velocity_.publish(msg);
+}
+
+//}
+
+/* publishOdometry() //{ */
+
+void HwApiManager::publishOdometry(const nav_msgs::Odometry& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_odometry_.publish(msg);
 }
 
 //}

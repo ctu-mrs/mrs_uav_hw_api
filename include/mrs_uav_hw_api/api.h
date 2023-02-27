@@ -18,8 +18,8 @@
 #include <mrs_msgs/HwApiVelocityHdgRateCmd.h>
 #include <mrs_msgs/HwApiVelocityHdgCmd.h>
 #include <mrs_msgs/HwApiPositionCmd.h>
-#include <mrs_msgs/HwApiDiagnostics.h>
-#include <mrs_msgs/HwApiMode.h>
+#include <mrs_msgs/HwApiStatus.h>
+#include <mrs_msgs/HwApiCapabilities.h>
 
 //}
 
@@ -34,8 +34,8 @@ public:
   virtual void initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers, const std::string& topic_prefix,
                           const std::string& uav_name) = 0;
 
-  virtual mrs_msgs::HwApiDiagnostics getDiagnostics() = 0;
-  virtual mrs_msgs::HwApiMode        getMode()        = 0;
+  virtual mrs_msgs::HwApiStatus       getStatus()       = 0;
+  virtual mrs_msgs::HwApiCapabilities getCapabilities() = 0;
 
   // | --------------------- topic callbacks -------------------- |
 

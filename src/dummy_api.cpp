@@ -29,8 +29,8 @@ public:
 
   // | --------------------- status methods --------------------- |
 
-  mrs_msgs::HwApiDiagnostics getDiagnostics();
-  mrs_msgs::HwApiMode        getMode();
+  mrs_msgs::HwApiStatus       getStatus();
+  mrs_msgs::HwApiCapabilities getCapabilities();
 
   // | --------------------- topic callbacks -------------------- |
 
@@ -88,11 +88,11 @@ void DummyApi::initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_
 
 //}
 
-/* getDiagnostics() //{ */
+/* getStatus() //{ */
 
-mrs_msgs::HwApiDiagnostics DummyApi::getDiagnostics() {
+mrs_msgs::HwApiStatus DummyApi::getStatus() {
 
-  mrs_msgs::HwApiDiagnostics diag;
+  mrs_msgs::HwApiStatus diag;
 
   diag.stamp = ros::Time::now();
 
@@ -105,11 +105,11 @@ mrs_msgs::HwApiDiagnostics DummyApi::getDiagnostics() {
 
 //}
 
-/* getMode() //{ */
+/* getCapabilities() //{ */
 
-mrs_msgs::HwApiMode DummyApi::getMode() {
+mrs_msgs::HwApiCapabilities DummyApi::getCapabilities() {
 
-  mrs_msgs::HwApiMode mode;
+  mrs_msgs::HwApiCapabilities mode;
 
   mode.api_name = "DummyApi";
   mode.stamp    = ros::Time::now();
