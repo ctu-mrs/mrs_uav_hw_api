@@ -82,6 +82,8 @@ private:
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>         sh_velocity_hdg_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>            sh_position_cmd_;
 
+  mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand> sh_tracker_cmd_;
+
   void callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp);
   void callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp);
   void callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>& wrp);
@@ -91,6 +93,7 @@ private:
   void callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp);
   void callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp);
   void callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp);
+  void callbackTrackerCmd(mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp);
 
   // | ----------------------- publishers ----------------------- |
 
@@ -218,6 +221,8 @@ void HwApiManager::onInit() {
   sh_velocity_hdg_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>(shopts, "velocity_hdg_cmd_in", &HwApiManager::callbackVelocityHdgCmd, this);
 
   sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>(shopts, "position_cmd_in", &HwApiManager::callbackPositionCmd, this);
+
+  sh_tracker_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts, "tracker_cmd_in", &HwApiManager::callbackTrackerCmd, this);
 
   // | ----------------------- publishers ----------------------- |
 
@@ -452,6 +457,19 @@ void HwApiManager::callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'position' command!");
   }
+}
+
+//}
+
+/* callbackTrackerCmd() //{ */
+
+void HwApiManager::callbackTrackerCmd(mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  hw_api_->callbackTrackerCmd(wrp);
 }
 
 //}

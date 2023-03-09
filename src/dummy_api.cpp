@@ -44,6 +44,8 @@ public:
   bool callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp);
   bool callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp);
 
+  void callbackTrackerCmd(mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp);
+
   // | -------------------- service callbacks ------------------- |
 
   std::tuple<bool, std::string> callbackArming(const bool& request);
@@ -196,6 +198,13 @@ bool DummyApi::callbackVelocityHdgCmd([[maybe_unused]] mrs_lib::SubscribeHandler
 bool DummyApi::callbackPositionCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp) {
 
   return false;
+}
+
+//}
+
+/* callbackTrackerCmd() //{ */
+
+void DummyApi::callbackTrackerCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp) {
 }
 
 //}

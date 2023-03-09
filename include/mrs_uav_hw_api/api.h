@@ -20,6 +20,7 @@
 #include <mrs_msgs/HwApiPositionCmd.h>
 #include <mrs_msgs/HwApiStatus.h>
 #include <mrs_msgs/HwApiCapabilities.h>
+#include <mrs_msgs/TrackerCommand.h>
 
 //}
 
@@ -56,6 +57,8 @@ public:
   virtual bool callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp) = 0;
 
   virtual bool callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp) = 0;
+
+  virtual void callbackTrackerCmd(mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp) = 0;
 
   // | -------------------- service callbacks ------------------- |
 

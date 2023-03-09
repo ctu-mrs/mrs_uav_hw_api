@@ -42,6 +42,7 @@
       <remap from="~velocity_hdg_rate_cmd_in" to="~velocity_hdg_rate_cmd" />
       <remap from="~velocity_hdg_cmd_in" to="~velocity_hdg_cmd" />
       <remap from="~position_cmd_in" to="~position_cmd" />
+      <remap from="~tracker_cmd_in" to="control_manager/tracker_cmd" />
 
       <!-- Publishers -->
       <remap from="~capabilities_out" to="~capabilities" />
