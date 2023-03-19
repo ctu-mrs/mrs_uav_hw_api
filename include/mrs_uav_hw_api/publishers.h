@@ -11,6 +11,8 @@
 
 #include <mrs_msgs/HwApiStatus.h>
 #include <mrs_msgs/HwApiRcChannels.h>
+#include <mrs_msgs/RtkGps.h>
+#include <mrs_msgs/RtkFixType.h>
 
 #include <mrs_msgs/HwApiAltitude.h>
 
@@ -27,6 +29,7 @@ namespace mrs_uav_hw_api
 
 typedef std::function<void(const sensor_msgs::NavSatFix &msg)>    publishGNSS_t;
 typedef std::function<void(const sensor_msgs::NavSatStatus &msg)> publishGNSSStatus_t;
+typedef std::function<void(const mrs_msgs::RtkGps &msg)>          publishRTK_t;
 typedef std::function<void(const sensor_msgs::Range &msg)>        publishDistanceSensor_t;
 typedef std::function<void(const mrs_msgs::HwApiAltitude &msg)>   publishAltitude_t;
 typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>  publishMagnetometerHeading_t;
@@ -46,6 +49,7 @@ struct Publishers_t
   publishIMU_t                 publishIMU;
   publishGNSS_t                publishGNSS;
   publishGNSSStatus_t          publishGNSSStatus;
+  publishRTK_t                 publishRTK;
   publishDistanceSensor_t      publishDistanceSensor;
   publishAltitude_t            publishAltitude;
   publishMagnetometerHeading_t publishMagnetometerHeading;
@@ -57,6 +61,7 @@ struct Publishers_t
   publishVelocity_t            publishVelocity;
   publishAngularVelocity_t     publishAngularVelocity;
   publishOdometry_t            publishOdometry;
+  publishOdometry_t            publishGroundTruth;
 };
 
 }  // namespace mrs_uav_hw_api

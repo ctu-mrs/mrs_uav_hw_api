@@ -102,6 +102,7 @@ private:
 
   mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>    ph_gnss_;
   mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus> ph_gnss_status_;
+  mrs_lib::PublisherHandler<mrs_msgs::RtkGps>          ph_rtk_;
   mrs_lib::PublisherHandler<sensor_msgs::Imu>          ph_imu_;
   mrs_lib::PublisherHandler<sensor_msgs::Range>        ph_distance_sensor_;
   mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>   ph_altitude_;
@@ -114,10 +115,13 @@ private:
   mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped> ph_orientation_;
   mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>    ph_angular_velocity_;
   mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_odometry_;
+  mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_ground_truth_;
 
   void publishGNSS(const sensor_msgs::NavSatFix& msg);
   void publishGNSSStatus(const sensor_msgs::NavSatStatus& msg);
+  void publishRTK(const mrs_msgs::RtkGps& msg);
   void publishOdometry(const nav_msgs::Odometry& msg);
+  void publishGroundTruth(const nav_msgs::Odometry& msg);
   void publishIMU(const sensor_msgs::Imu& msg);
   void publishDistanceSensor(const sensor_msgs::Range& msg);
   void publishAltitude(const mrs_msgs::HwApiAltitude& msg);
@@ -231,6 +235,7 @@ void HwApiManager::onInit() {
 
   ph_gnss_            = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss_out", 1, false, 50);
   ph_gnss_status_     = mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>(nh_, "gnss_status_out", 1, false, 10);
+  ph_rtk_             = mrs_lib::PublisherHandler<mrs_msgs::RtkGps>(nh_, "rtk_out", 1, false, 50);
   ph_distance_sensor_ = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor_out", 1, false, 250);
   ph_mag_heading_     = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading_out", 1, false, 100);
   ph_altitude_        = mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>(nh_, "altitude_out", 1, false, 100);
@@ -243,6 +248,7 @@ void HwApiManager::onInit() {
   ph_velocity_         = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "velocity_out", 1, false, 250);
   ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "angular_velocity_out", 1, false, 500);
   ph_odometry_         = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry_out", 1, false, 250);
+  ph_ground_truth_     = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "ground_truth_out", 1, false, 250);
 
   // | --------------------- service servers -------------------- |
 
@@ -262,6 +268,7 @@ void HwApiManager::onInit() {
 
   common_handlers_->publishers.publishGNSS                = std::bind(&HwApiManager::publishGNSS, this, std::placeholders::_1);
   common_handlers_->publishers.publishGNSSStatus          = std::bind(&HwApiManager::publishGNSSStatus, this, std::placeholders::_1);
+  common_handlers_->publishers.publishRTK                 = std::bind(&HwApiManager::publishRTK, this, std::placeholders::_1);
   common_handlers_->publishers.publishDistanceSensor      = std::bind(&HwApiManager::publishDistanceSensor, this, std::placeholders::_1);
   common_handlers_->publishers.publishAltitude            = std::bind(&HwApiManager::publishAltitude, this, std::placeholders::_1);
   common_handlers_->publishers.publishIMU                 = std::bind(&HwApiManager::publishIMU, this, std::placeholders::_1);
@@ -275,6 +282,7 @@ void HwApiManager::onInit() {
   common_handlers_->publishers.publishVelocity        = std::bind(&HwApiManager::publishVelocity, this, std::placeholders::_1);
   common_handlers_->publishers.publishAngularVelocity = std::bind(&HwApiManager::publishAngularVelocity, this, std::placeholders::_1);
   common_handlers_->publishers.publishOdometry        = std::bind(&HwApiManager::publishOdometry, this, std::placeholders::_1);
+  common_handlers_->publishers.publishGroundTruth     = std::bind(&HwApiManager::publishGroundTruth, this, std::placeholders::_1);
 
   // | -------------------- load the plugin -------------------- |
 
@@ -580,6 +588,19 @@ void HwApiManager::publishGNSSStatus(const sensor_msgs::NavSatStatus& msg) {
 
 //}
 
+/* publishRTK() //{ */
+
+void HwApiManager::publishRTK(const mrs_msgs::RtkGps& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_rtk_.publish(msg);
+}
+
+//}
+
 /* publishIMU() //{ */
 
 void HwApiManager::publishIMU(const sensor_msgs::Imu& msg) {
@@ -719,6 +740,19 @@ void HwApiManager::publishOdometry(const nav_msgs::Odometry& msg) {
   }
 
   ph_odometry_.publish(msg);
+}
+
+//}
+
+/* publishGroundTruth() //{ */
+
+void HwApiManager::publishGroundTruth(const nav_msgs::Odometry& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_ground_truth_.publish(msg);
 }
 
 //}

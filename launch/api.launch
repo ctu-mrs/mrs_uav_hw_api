@@ -32,7 +32,7 @@
       <param name="topic_prefix" type="string" value="/$(arg UAV_NAME)/" />
       <param name="uav_name" type="string" value="$(arg UAV_NAME)" />
 
-      <!-- Subscribers -->
+      <!-- Subscribers (DO NOT CHANGE) -->
       <remap from="~actuator_cmd_in" to="~actuator_cmd" />
       <remap from="~control_group_cmd_in" to="~control_group_cmd" />
       <remap from="~attitude_cmd_in" to="~attitude_cmd" />
@@ -44,12 +44,14 @@
       <remap from="~position_cmd_in" to="~position_cmd" />
       <remap from="~tracker_cmd_in" to="control_manager/tracker_cmd" />
 
-      <!-- Publishers -->
+      <!-- Publishers (DO NOT CHANGE) -->
       <remap from="~capabilities_out" to="~capabilities" />
       <remap from="~status_out" to="~status" />
       <remap from="~gnss_out" to="~gnss" />
       <remap from="~gnss_status_out" to="~gnss_status" />
+      <remap from="~rtk_out" to="~rtk" />
       <remap from="~odometry_out" to="~odometry" />
+      <remap from="~ground_truth_out" to="~ground_truth" />
       <remap from="~position_out" to="~position" />
       <remap from="~orientation_out" to="~orientation" />
       <remap from="~velocity_out" to="~velocity" />
@@ -61,7 +63,7 @@
       <remap from="~rc_channels_out" to="~rc_channels" />
       <remap from="~battery_state_out" to="~battery_state" />
 
-      <!-- Services -->
+      <!-- Services (DO NOT CHANGE) -->
       <remap from="~arming_in" to="~arming" />
       <remap from="~offboard_in" to="~offboard" />
 
