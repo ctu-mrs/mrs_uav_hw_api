@@ -25,6 +25,7 @@
 #include <sensor_msgs/Range.h>
 
 #include <std_msgs/Float64.h>
+#include <std_msgs/Empty.h>
 #include <mrs_msgs/Float64Stamped.h>
 
 #include <pluginlib/class_loader.h>
@@ -98,6 +99,7 @@ private:
   // | ----------------------- publishers ----------------------- |
 
   mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>       ph_status_;
+  mrs_lib::PublisherHandler<std_msgs::Empty>             ph_connected_;
   mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities> ph_capabilities_;
 
   mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>    ph_gnss_;
@@ -139,7 +141,7 @@ private:
   ros::Timer timer_diagnostics_;
   ros::Timer timer_mode_;
 
-  void timerDiagnostics(const ros::TimerEvent& event);
+  void timerStatus(const ros::TimerEvent& event);
   void timerMode(const ros::TimerEvent& event);
 
   // | --------------------- service servers -------------------- |
@@ -232,6 +234,7 @@ void HwApiManager::onInit() {
 
   ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities_out", 1);
   ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status_out", 1);
+  ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected_out", 1);
 
   ph_gnss_            = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss_out", 1, false, 50);
   ph_gnss_status_     = mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>(nh_, "gnss_status_out", 1, false, 10);
@@ -257,7 +260,7 @@ void HwApiManager::onInit() {
 
   // | ------------------------- timers ------------------------- |
 
-  timer_diagnostics_ = nh_.createTimer(ros::Rate(_timer_diagnostics_rate_), &HwApiManager::timerDiagnostics, this);
+  timer_diagnostics_ = nh_.createTimer(ros::Rate(_timer_diagnostics_rate_), &HwApiManager::timerStatus, this);
   timer_mode_        = nh_.createTimer(ros::Rate(_timer_mode_rate_), &HwApiManager::timerMode, this);
 
   // | ---------------- bind the common handlers ---------------- |
@@ -526,19 +529,25 @@ bool HwApiManager::callbackOffboard([[maybe_unused]] std_srvs::Trigger::Request&
 
 // | ------------------------- timers ------------------------- |
 
-/* timerDiagnostics() //{ */
+/* timerStatus() //{ */
 
-void HwApiManager::timerDiagnostics([[maybe_unused]] const ros::TimerEvent& event) {
+void HwApiManager::timerStatus([[maybe_unused]] const ros::TimerEvent& event) {
 
   if (!is_initialized_) {
     return;
   }
 
-  ROS_INFO_ONCE("[HwApiManager]: timerDiagnostics() spinning");
+  ROS_INFO_ONCE("[HwApiManager]: timerStatus() spinning");
 
-  mrs_msgs::HwApiStatus diag = hw_api_->getStatus();
+  mrs_msgs::HwApiStatus status = hw_api_->getStatus();
 
-  ph_status_.publish(diag);
+  ph_status_.publish(status);
+
+  if (status.connected) {
+
+    std_msgs::Empty msg;
+    ph_connected_.publish(msg);
+  }
 }
 
 //}
