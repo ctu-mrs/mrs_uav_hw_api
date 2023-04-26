@@ -32,8 +32,7 @@ class MrsUavHwApi {
 public:
   virtual ~MrsUavHwApi() = 0;
 
-  virtual void initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers, const std::string& topic_prefix,
-                          const std::string& uav_name) = 0;
+  virtual void initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) = 0;
 
   virtual mrs_msgs::HwApiStatus       getStatus()       = 0;
   virtual mrs_msgs::HwApiCapabilities getCapabilities() = 0;

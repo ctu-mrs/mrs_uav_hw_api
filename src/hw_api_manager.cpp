@@ -54,6 +54,8 @@ private:
 
   std::string _plugin_address_;
   std::string _uav_name_;
+  std::string _body_frame_name_;
+  std::string _world_frame_name_;
   std::string _topic_prefix_;
 
   // | ----------------------- transformer ---------------------- |
@@ -119,6 +121,10 @@ private:
   mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_odometry_;
   mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_ground_truth_;
 
+  std::string getUavName(void);
+  std::string getBodyFrameName(void);
+  std::string getWorldFrameName(void);
+
   void publishGNSS(const sensor_msgs::NavSatFix& msg);
   void publishGNSSStatus(const sensor_msgs::NavSatStatus& msg);
   void publishRTK(const mrs_msgs::RtkGps& msg);
@@ -179,6 +185,8 @@ void HwApiManager::onInit() {
 
   param_loader.loadParam("hw_interface_plugin", _plugin_address_);
   param_loader.loadParam("uav_name", _uav_name_);
+  param_loader.loadParam("body_frame_name", _body_frame_name_);
+  param_loader.loadParam("world_frame_name", _world_frame_name_);
   param_loader.loadParam("topic_prefix", _topic_prefix_);
   param_loader.loadParam("timers/diagnostics/rate", _timer_diagnostics_rate_);
   param_loader.loadParam("timers/mode/rate", _timer_mode_rate_);
@@ -269,6 +277,10 @@ void HwApiManager::onInit() {
 
   common_handlers_->transformer = transformer_;
 
+  common_handlers_->getUavName        = std::bind(&HwApiManager::getUavName, this);
+  common_handlers_->getBodyFrameName  = std::bind(&HwApiManager::getBodyFrameName, this);
+  common_handlers_->getWorldFrameName = std::bind(&HwApiManager::getWorldFrameName, this);
+
   common_handlers_->publishers.publishGNSS                = std::bind(&HwApiManager::publishGNSS, this, std::placeholders::_1);
   common_handlers_->publishers.publishGNSSStatus          = std::bind(&HwApiManager::publishGNSSStatus, this, std::placeholders::_1);
   common_handlers_->publishers.publishRTK                 = std::bind(&HwApiManager::publishRTK, this, std::placeholders::_1);
@@ -308,7 +320,7 @@ void HwApiManager::onInit() {
 
   // | ------------------ initialize the plugin ----------------- |
 
-  hw_api_->initialize(nh_, common_handlers_, _topic_prefix_, _uav_name_);
+  hw_api_->initialize(nh_, common_handlers_);
 
   ROS_INFO("[HwApiManager]: initialized");
 
@@ -565,6 +577,35 @@ void HwApiManager::timerMode([[maybe_unused]] const ros::TimerEvent& event) {
   mrs_msgs::HwApiCapabilities diag = hw_api_->getCapabilities();
 
   ph_capabilities_.publish(diag);
+}
+
+//}
+
+// | --------------------- common handlers -------------------- |
+
+/* getUavName() //{ */
+
+std::string HwApiManager::getUavName(void) {
+
+  return _uav_name_;
+}
+
+//}
+
+/* getBodyFrameName() //{ */
+
+std::string HwApiManager::getBodyFrameName(void) {
+
+  return _body_frame_name_;
+}
+
+//}
+
+/* getBodyFrameName() //{ */
+
+std::string HwApiManager::getWorldFrameName(void) {
+
+  return _world_frame_name_;
 }
 
 //}

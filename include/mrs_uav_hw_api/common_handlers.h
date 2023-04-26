@@ -9,10 +9,18 @@ namespace mrs_uav_hw_api
 
 //}
 
+typedef std::function<std::string(void)> getUavName_t;
+typedef std::function<std::string(void)> getBodyFrameName_t;
+typedef std::function<std::string(void)> getWorldFrameName_t;
+
 struct CommonHandlers_t
 {
   Publishers_t                          publishers;
   std::shared_ptr<mrs_lib::Transformer> transformer;
+
+  getUavName_t        getUavName;
+  getBodyFrameName_t  getBodyFrameName;
+  getWorldFrameName_t getWorldFrameName;
 };
 
 

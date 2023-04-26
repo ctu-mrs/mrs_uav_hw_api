@@ -24,8 +24,7 @@ class DummyApi : public mrs_uav_hw_api::MrsUavHwApi {
 public:
   /* ~DummyApi(){}; */
 
-  void initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers, const std::string& topic_prefix,
-                  const std::string& uav_name);
+  void initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers);
 
   // | --------------------- status methods --------------------- |
 
@@ -65,8 +64,7 @@ private:
 
 /* initialize() //{ */
 
-void DummyApi::initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers,
-                          [[maybe_unused]] const std::string& topic_prefix, [[maybe_unused]] const std::string& uav_name) {
+void DummyApi::initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) {
 
   ros::NodeHandle nh_(parent_nh);
 

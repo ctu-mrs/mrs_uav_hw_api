@@ -2,6 +2,9 @@ version: "1.0.0.0"
 
 hw_interface_plugin: "mrs_uav_hw_api/DummyApi"
 
+body_frame_name: "fcu"
+world_frame_name: "hw_api_world"
+
 timers:
   diagnostics:
     rate: 100 # [Hz]
