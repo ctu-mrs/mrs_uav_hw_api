@@ -2,17 +2,11 @@ name: Noetic
 
 on:
   push:
-    branches: [ hw_api_ci ]
+    branches: [ master ]
     paths-ignore:
-      - '**/README.md'
-      - '**.yaml'
-      - '**.yml'
-      - '**.launch'
-  pull_request:
-    branches: [ hw_api_ci ]
 
-  # schedule:
-  #   - cron:  '0 0 * * *' # at the end of every day
+  pull_request:
+    branches: [ master ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
