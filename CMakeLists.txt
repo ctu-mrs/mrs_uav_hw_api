@@ -81,7 +81,6 @@ install(DIRECTORY include/mrs_uav_hw_api/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   )
 
-install(DIRECTORY
+install(FILES plugins.xml nodelets.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  FILES_MATCHING PATTERN "*.xml"
   )
