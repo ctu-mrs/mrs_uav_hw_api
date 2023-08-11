@@ -1,4 +1,4 @@
-<library path="lib/libMrsUavHwApi">
+<library path="lib/libMrsUavHwApi_HwApi">
   <class name="mrs_uav_hw_api/HwApiManager" type="mrs_uav_hw_api::HwApiManager" base_class_type="nodelet::Nodelet">
     <description>MRS UAV HW API Manager</description>
   </class>

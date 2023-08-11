@@ -1,31 +1,35 @@
-cmake_minimum_required(VERSION 3.1.2)
+cmake_minimum_required(VERSION 3.5)
 project(mrs_uav_hw_api)
-
-find_package(catkin REQUIRED COMPONENTS
-  cmake_modules
-  nodelet
-  roscpp
-  mrs_msgs
-  mrs_lib
-  sensor_msgs
-  nav_msgs
-  std_msgs
-  geometry_msgs
-  )
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
+set(CATKIN_DEPENDENCIES
+  cmake_modules
+  geometry_msgs
+  mrs_lib
+  mrs_msgs
+  nav_msgs
+  nodelet
+  roscpp
+  sensor_msgs
+  std_msgs
+  )
+
+find_package(catkin REQUIRED COMPONENTS
+  ${CATKIN_DEPENDENCIES}
+  )
+
 set(LIBRARIES
-  MrsUavHwApi MrsUAVHwDummyApi
+  MrsUavHwApi_HwApi MrsUavHwApi_DummyApi
   )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${LIBRARIES}
-  CATKIN_DEPENDS roscpp nodelet mrs_msgs mrs_lib sensor_msgs nav_msgs std_msgs geometry_msgs
+  CATKIN_DEPENDS ${CATKIN_DEPENDENCIES}
   )
 
 include_directories(
@@ -33,33 +37,33 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   )
 
-# MrsUavHwApi
+# MrsUavHwApi_HwApi
 
-add_library(MrsUavHwApi
+add_library(MrsUavHwApi_HwApi
   src/hw_api_manager.cpp
   )
 
-add_dependencies(MrsUavHwApi
+add_dependencies(MrsUavHwApi_HwApi
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
   )
 
-target_link_libraries(MrsUavHwApi
+target_link_libraries(MrsUavHwApi_HwApi
   ${catkin_LIBRARIES}
   )
 
 # DummyApi
 
-add_library(MrsUAVHwDummyApi
+add_library(MrsUavHwApi_DummyApi
   src/dummy_api.cpp
   )
 
-add_dependencies(MrsUAVHwDummyApi
+add_dependencies(MrsUavHwApi_DummyApi
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
   )
 
-target_link_libraries(MrsUAVHwDummyApi
+target_link_libraries(MrsUavHwApi_DummyApi
   ${catkin_LIBRARIES}
   )
 
