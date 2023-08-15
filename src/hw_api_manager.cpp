@@ -104,15 +104,16 @@ private:
   mrs_lib::PublisherHandler<std_msgs::Empty>             ph_connected_;
   mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities> ph_capabilities_;
 
-  mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>    ph_gnss_;
-  mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus> ph_gnss_status_;
-  mrs_lib::PublisherHandler<mrs_msgs::RtkGps>          ph_rtk_;
-  mrs_lib::PublisherHandler<sensor_msgs::Imu>          ph_imu_;
-  mrs_lib::PublisherHandler<sensor_msgs::Range>        ph_distance_sensor_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>   ph_altitude_;
-  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>  ph_mag_heading_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels> ph_rc_channels_;
-  mrs_lib::PublisherHandler<sensor_msgs::BatteryState> ph_battery_state_;
+  mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>     ph_gnss_;
+  mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>  ph_gnss_status_;
+  mrs_lib::PublisherHandler<mrs_msgs::RtkGps>           ph_rtk_;
+  mrs_lib::PublisherHandler<sensor_msgs::Imu>           ph_imu_;
+  mrs_lib::PublisherHandler<sensor_msgs::Range>         ph_distance_sensor_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>    ph_altitude_;
+  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>   ph_mag_heading_;
+  mrs_lib::PublisherHandler<sensor_msgs::MagneticField> ph_mag_magnetic_field_;
+  mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>  ph_rc_channels_;
+  mrs_lib::PublisherHandler<sensor_msgs::BatteryState>  ph_battery_state_;
 
   mrs_lib::PublisherHandler<geometry_msgs::PointStamped>      ph_position_;
   mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>    ph_velocity_;
@@ -134,6 +135,7 @@ private:
   void publishDistanceSensor(const sensor_msgs::Range& msg);
   void publishAltitude(const mrs_msgs::HwApiAltitude& msg);
   void publishMagnetometerHeading(const mrs_msgs::Float64Stamped& msg);
+  void publishMagneticField(const sensor_msgs::MagneticField& msg);
   void publishStatus(const mrs_msgs::HwApiStatus& msg);
   void publishRcChannels(const mrs_msgs::HwApiRcChannels& msg);
   void publishOrientation(const geometry_msgs::QuaternionStamped& msg);
@@ -213,58 +215,57 @@ void HwApiManager::onInit() {
   shopts.queue_size         = 10;
   shopts.transport_hints    = ros::TransportHints().tcpNoDelay();
 
-  sh_actuator_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>(shopts, "actuator_cmd_in", &HwApiManager::callbackActuatorCmd, this);
+  sh_actuator_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>(shopts, "actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
 
-  sh_control_group_cmd_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>(shopts, "control_group_cmd_in", &HwApiManager::callbackControlGroupCmd, this);
+  sh_control_group_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>(shopts, "control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
 
-  sh_attitude_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>(shopts, "attitude_cmd_in", &HwApiManager::callbackAttitudeCmd, this);
+  sh_attitude_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>(shopts, "attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
 
-  sh_attitude_rate_cmd_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>(shopts, "attitude_rate_cmd_in", &HwApiManager::callbackAttitudeRateCmd, this);
+  sh_attitude_rate_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>(shopts, "attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
 
-  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>(shopts, "acceleration_hdg_rate_cmd_in",
+  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>(shopts, "acceleration_hdg_rate_cmd",
                                                                                                    &HwApiManager::callbackAccelerationHdgRateCmd, this);
 
   sh_acceleration_hdg_cmd_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>(shopts, "acceleration_hdg_cmd_in", &HwApiManager::callbackAccelerationHdgCmd, this);
+      mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>(shopts, "acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
 
   sh_velocity_hdg_rate_cmd_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>(shopts, "velocity_hdg_rate_cmd_in", &HwApiManager::callbackVelocityHdgRateCmd, this);
+      mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>(shopts, "velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
 
-  sh_velocity_hdg_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>(shopts, "velocity_hdg_cmd_in", &HwApiManager::callbackVelocityHdgCmd, this);
+  sh_velocity_hdg_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>(shopts, "velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
 
-  sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>(shopts, "position_cmd_in", &HwApiManager::callbackPositionCmd, this);
+  sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>(shopts, "position_cmd", &HwApiManager::callbackPositionCmd, this);
 
-  sh_tracker_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts, "tracker_cmd_in", &HwApiManager::callbackTrackerCmd, this);
+  sh_tracker_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts, "tracker_cmd", &HwApiManager::callbackTrackerCmd, this);
 
   // | ----------------------- publishers ----------------------- |
 
-  ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities_out", 1);
-  ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status_out", 1);
-  ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected_out", 1);
+  ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities", 1);
+  ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status", 1);
+  ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected", 1);
 
-  ph_gnss_            = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss_out", 1, false, 50);
-  ph_gnss_status_     = mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>(nh_, "gnss_status_out", 1, false, 10);
-  ph_rtk_             = mrs_lib::PublisherHandler<mrs_msgs::RtkGps>(nh_, "rtk_out", 1, false, 50);
-  ph_distance_sensor_ = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor_out", 1, false, 250);
-  ph_mag_heading_     = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading_out", 1, false, 100);
-  ph_altitude_        = mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>(nh_, "altitude_out", 1, false, 100);
-  ph_imu_             = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu_out", 1, false, 500);
-  ph_rc_channels_     = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels_out", 1, false, 100);
-  ph_battery_state_   = mrs_lib::PublisherHandler<sensor_msgs::BatteryState>(nh_, "battery_state_out", 1, false, 100);
+  ph_gnss_               = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss", 1, false, 50);
+  ph_gnss_status_        = mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>(nh_, "gnss_status", 1, false, 10);
+  ph_rtk_                = mrs_lib::PublisherHandler<mrs_msgs::RtkGps>(nh_, "rtk", 1, false, 50);
+  ph_distance_sensor_    = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor", 1, false, 250);
+  ph_mag_heading_        = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading", 1, false, 100);
+  ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::MagneticField>(nh_, "magnetic_field", 1, false, 100);
+  ph_altitude_           = mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>(nh_, "altitude", 1, false, 100);
+  ph_imu_                = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu", 1, false, 500);
+  ph_rc_channels_        = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels", 1, false, 100);
+  ph_battery_state_      = mrs_lib::PublisherHandler<sensor_msgs::BatteryState>(nh_, "battery_state", 1, false, 100);
 
-  ph_position_         = mrs_lib::PublisherHandler<geometry_msgs::PointStamped>(nh_, "position_out", 1, false, 250);
-  ph_orientation_      = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation_out", 1, false, 250);
-  ph_velocity_         = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "velocity_out", 1, false, 250);
-  ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "angular_velocity_out", 1, false, 500);
-  ph_odometry_         = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry_out", 1, false, 250);
-  ph_ground_truth_     = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "ground_truth_out", 1, false, 250);
+  ph_position_         = mrs_lib::PublisherHandler<geometry_msgs::PointStamped>(nh_, "position", 1, false, 250);
+  ph_orientation_      = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation", 1, false, 250);
+  ph_velocity_         = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "velocity", 1, false, 250);
+  ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "angular_velocity", 1, false, 500);
+  ph_odometry_         = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry", 1, false, 250);
+  ph_ground_truth_     = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "ground_truth", 1, false, 250);
 
   // | --------------------- service servers -------------------- |
 
-  ss_arming_   = nh_.advertiseService("arming_in", &HwApiManager::callbackArming, this);
-  ss_offboard_ = nh_.advertiseService("offboard_in", &HwApiManager::callbackOffboard, this);
+  ss_arming_   = nh_.advertiseService("arming", &HwApiManager::callbackArming, this);
+  ss_offboard_ = nh_.advertiseService("offboard", &HwApiManager::callbackOffboard, this);
 
   // | ------------------------- timers ------------------------- |
 
@@ -288,6 +289,7 @@ void HwApiManager::onInit() {
   common_handlers_->publishers.publishAltitude            = std::bind(&HwApiManager::publishAltitude, this, std::placeholders::_1);
   common_handlers_->publishers.publishIMU                 = std::bind(&HwApiManager::publishIMU, this, std::placeholders::_1);
   common_handlers_->publishers.publishMagnetometerHeading = std::bind(&HwApiManager::publishMagnetometerHeading, this, std::placeholders::_1);
+  common_handlers_->publishers.publishMagneticField       = std::bind(&HwApiManager::publishMagneticField, this, std::placeholders::_1);
   common_handlers_->publishers.publishStatus              = std::bind(&HwApiManager::publishStatus, this, std::placeholders::_1);
   common_handlers_->publishers.publishRcChannels          = std::bind(&HwApiManager::publishRcChannels, this, std::placeholders::_1);
   common_handlers_->publishers.publishBatteryState        = std::bind(&HwApiManager::publishBatteryState, this, std::placeholders::_1);
@@ -699,6 +701,19 @@ void HwApiManager::publishMagnetometerHeading(const mrs_msgs::Float64Stamped& ms
   }
 
   ph_mag_heading_.publish(msg);
+}
+
+//}
+
+/* publishMagneticField() //{ */
+
+void HwApiManager::publishMagneticField(const sensor_msgs::MagneticField& msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_mag_magnetic_field_.publish(msg);
 }
 
 //}
