@@ -24,7 +24,7 @@ class DummyApi : public mrs_uav_hw_api::MrsUavHwApi {
 public:
   /* ~DummyApi(){}; */
 
-  void initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers);
+  void initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers);
 
   // | --------------------- status methods --------------------- |
 
@@ -33,21 +33,21 @@ public:
 
   // | --------------------- topic callbacks -------------------- |
 
-  bool callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp);
-  bool callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp);
-  bool callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>& wrp);
-  bool callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>& wrp);
-  bool callbackAccelerationHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>& wrp);
-  bool callbackAccelerationHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>& wrp);
-  bool callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp);
-  bool callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp);
-  bool callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp);
+  bool callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPtr msg);
+  bool callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd::ConstPtr msg);
+  bool callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd::ConstPtr msg);
+  bool callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPtr msg);
+  bool callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerationHdgRateCmd::ConstPtr msg);
+  bool callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationHdgCmd::ConstPtr msg);
+  bool callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRateCmd::ConstPtr msg);
+  bool callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::ConstPtr msg);
+  bool callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPtr msg);
 
-  void callbackTrackerCmd(mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp);
+  void callbackTrackerCmd(const mrs_msgs::TrackerCommand::ConstPtr msg);
 
   // | -------------------- service callbacks ------------------- |
 
-  std::tuple<bool, std::string> callbackArming(const bool& request);
+  std::tuple<bool, std::string> callbackArming(const bool &request);
   std::tuple<bool, std::string> callbackOffboard(void);
 
 private:
@@ -64,7 +64,7 @@ private:
 
 /* initialize() //{ */
 
-void DummyApi::initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) {
+void DummyApi::initialize(const ros::NodeHandle &parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) {
 
   ros::NodeHandle nh_(parent_nh);
 
@@ -121,7 +121,7 @@ mrs_msgs::HwApiCapabilities DummyApi::getCapabilities() {
 
 /* callbackActuatorCmd() //{ */
 
-bool DummyApi::callbackActuatorCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp) {
+bool DummyApi::callbackActuatorCmd([[maybe_unused]] const mrs_msgs::HwApiActuatorCmd::ConstPtr msg) {
 
   return false;
 }
@@ -130,7 +130,7 @@ bool DummyApi::callbackActuatorCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mr
 
 /* callbackControlGroupCmd() //{ */
 
-bool DummyApi::callbackControlGroupCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp) {
+bool DummyApi::callbackControlGroupCmd([[maybe_unused]] const mrs_msgs::HwApiControlGroupCmd::ConstPtr msg) {
 
   return false;
 }
@@ -139,7 +139,7 @@ bool DummyApi::callbackControlGroupCmd([[maybe_unused]] mrs_lib::SubscribeHandle
 
 /* callbackAttitudeRateCmd() //{ */
 
-bool DummyApi::callbackAttitudeRateCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>& wrp) {
+bool DummyApi::callbackAttitudeRateCmd([[maybe_unused]] const mrs_msgs::HwApiAttitudeRateCmd::ConstPtr msg) {
 
   return false;
 }
@@ -148,7 +148,7 @@ bool DummyApi::callbackAttitudeRateCmd([[maybe_unused]] mrs_lib::SubscribeHandle
 
 /* callbackAttitudeCmd() //{ */
 
-bool DummyApi::callbackAttitudeCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>& wrp) {
+bool DummyApi::callbackAttitudeCmd([[maybe_unused]] const mrs_msgs::HwApiAttitudeCmd::ConstPtr msg) {
 
   return false;
 }
@@ -157,7 +157,7 @@ bool DummyApi::callbackAttitudeCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mr
 
 /* callbackAccelerationHdgRateCmd() //{ */
 
-bool DummyApi::callbackAccelerationHdgRateCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>& wrp) {
+bool DummyApi::callbackAccelerationHdgRateCmd([[maybe_unused]] const mrs_msgs::HwApiAccelerationHdgRateCmd::ConstPtr msg) {
 
   return false;
 }
@@ -166,7 +166,7 @@ bool DummyApi::callbackAccelerationHdgRateCmd([[maybe_unused]] mrs_lib::Subscrib
 
 /* callbackAccelerationHdgCmd() //{ */
 
-bool DummyApi::callbackAccelerationHdgCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>& wrp) {
+bool DummyApi::callbackAccelerationHdgCmd([[maybe_unused]] const mrs_msgs::HwApiAccelerationHdgCmd::ConstPtr msg) {
 
   return false;
 }
@@ -175,7 +175,7 @@ bool DummyApi::callbackAccelerationHdgCmd([[maybe_unused]] mrs_lib::SubscribeHan
 
 /* callbackVelocityHdgRateCmd() //{ */
 
-bool DummyApi::callbackVelocityHdgRateCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp) {
+bool DummyApi::callbackVelocityHdgRateCmd([[maybe_unused]] const mrs_msgs::HwApiVelocityHdgRateCmd::ConstPtr msg) {
 
   return false;
 }
@@ -184,7 +184,7 @@ bool DummyApi::callbackVelocityHdgRateCmd([[maybe_unused]] mrs_lib::SubscribeHan
 
 /* callbackVelocityHdgCmd() //{ */
 
-bool DummyApi::callbackVelocityHdgCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp) {
+bool DummyApi::callbackVelocityHdgCmd([[maybe_unused]] const mrs_msgs::HwApiVelocityHdgCmd::ConstPtr msg) {
 
   return false;
 }
@@ -193,7 +193,7 @@ bool DummyApi::callbackVelocityHdgCmd([[maybe_unused]] mrs_lib::SubscribeHandler
 
 /* callbackPositionCmd() //{ */
 
-bool DummyApi::callbackPositionCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp) {
+bool DummyApi::callbackPositionCmd([[maybe_unused]] const mrs_msgs::HwApiPositionCmd::ConstPtr msg) {
 
   return false;
 }
@@ -202,14 +202,14 @@ bool DummyApi::callbackPositionCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mr
 
 /* callbackTrackerCmd() //{ */
 
-void DummyApi::callbackTrackerCmd([[maybe_unused]] mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp) {
+void DummyApi::callbackTrackerCmd([[maybe_unused]] const mrs_msgs::TrackerCommand::ConstPtr msg) {
 }
 
 //}
 
 /* callbackArming() //{ */
 
-std::tuple<bool, std::string> DummyApi::callbackArming([[maybe_unused]] const bool& request) {
+std::tuple<bool, std::string> DummyApi::callbackArming([[maybe_unused]] const bool &request) {
 
   return {false, "Dummy interface does not allow to arm."};
 }

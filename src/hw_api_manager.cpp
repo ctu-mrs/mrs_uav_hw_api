@@ -87,16 +87,16 @@ private:
 
   mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand> sh_tracker_cmd_;
 
-  void callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp);
-  void callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp);
-  void callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>& wrp);
-  void callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>& wrp);
-  void callbackAccelerationHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>& wrp);
-  void callbackAccelerationHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>& wrp);
-  void callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp);
-  void callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp);
-  void callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp);
-  void callbackTrackerCmd(mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp);
+  void callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPtr msg);
+  void callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd::ConstPtr msg);
+  void callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd::ConstPtr msg);
+  void callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPtr msg);
+  void callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerationHdgRateCmd::ConstPtr msg);
+  void callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationHdgCmd::ConstPtr msg);
+  void callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRateCmd::ConstPtr msg);
+  void callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::ConstPtr msg);
+  void callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPtr msg);
+  void callbackTrackerCmd(const mrs_msgs::TrackerCommand::ConstPtr msg);
 
   // | ----------------------- publishers ----------------------- |
 
@@ -335,13 +335,13 @@ void HwApiManager::onInit() {
 
 /* callbackActuatorCmd() //{ */
 
-void HwApiManager::callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp) {
+void HwApiManager::callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackActuatorCmd(wrp);
+  bool result = hw_api_->callbackActuatorCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
@@ -352,13 +352,13 @@ void HwApiManager::callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
 
 /* callbackControlGroupCmd() //{ */
 
-void HwApiManager::callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp) {
+void HwApiManager::callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackControlGroupCmd(wrp);
+  bool result = hw_api_->callbackControlGroupCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
@@ -369,13 +369,13 @@ void HwApiManager::callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::H
 
 /* callbackAttitudeRateCmd() //{ */
 
-void HwApiManager::callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>& wrp) {
+void HwApiManager::callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackAttitudeRateCmd(wrp);
+  bool result = hw_api_->callbackAttitudeRateCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'attitude rate' command!");
@@ -386,13 +386,13 @@ void HwApiManager::callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::H
 
 /* callbackAttitudeCmd() //{ */
 
-void HwApiManager::callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>& wrp) {
+void HwApiManager::callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackAttitudeCmd(wrp);
+  bool result = hw_api_->callbackAttitudeCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'attitude' command!");
@@ -403,13 +403,13 @@ void HwApiManager::callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
 
 /* callbackAccelerationHdgRateCmd() //{ */
 
-void HwApiManager::callbackAccelerationHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>& wrp) {
+void HwApiManager::callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerationHdgRateCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackAccelerationHdgRateCmd(wrp);
+  bool result = hw_api_->callbackAccelerationHdgRateCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'acceleration+hdg rate' command!");
@@ -420,13 +420,13 @@ void HwApiManager::callbackAccelerationHdgRateCmd(mrs_lib::SubscribeHandler<mrs_
 
 /* callbackAccelerationHdgCmd() //{ */
 
-void HwApiManager::callbackAccelerationHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>& wrp) {
+void HwApiManager::callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationHdgCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackAccelerationHdgCmd(wrp);
+  bool result = hw_api_->callbackAccelerationHdgCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'acceleration+hdg' command!");
@@ -437,13 +437,13 @@ void HwApiManager::callbackAccelerationHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs
 
 /* callbackVelocityHdgRateCmd() //{ */
 
-void HwApiManager::callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp) {
+void HwApiManager::callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRateCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackVelocityHdgRateCmd(wrp);
+  bool result = hw_api_->callbackVelocityHdgRateCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'velocity+hdg rate' command!");
@@ -454,13 +454,13 @@ void HwApiManager::callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs
 
 /* callbackVelocityHdgCmd() //{ */
 
-void HwApiManager::callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp) {
+void HwApiManager::callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackVelocityHdgCmd(wrp);
+  bool result = hw_api_->callbackVelocityHdgCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'velocity+hdg' command!");
@@ -471,13 +471,13 @@ void HwApiManager::callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::Hw
 
 /* callbackPositionCmd() //{ */
 
-void HwApiManager::callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp) {
+void HwApiManager::callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  bool result = hw_api_->callbackPositionCmd(wrp);
+  bool result = hw_api_->callbackPositionCmd(msg);
 
   if (!result) {
     ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'position' command!");
@@ -488,13 +488,13 @@ void HwApiManager::callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApi
 
 /* callbackTrackerCmd() //{ */
 
-void HwApiManager::callbackTrackerCmd(mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp) {
+void HwApiManager::callbackTrackerCmd(const mrs_msgs::TrackerCommand::ConstPtr msg) {
 
   if (!is_initialized_) {
     return;
   }
 
-  hw_api_->callbackTrackerCmd(wrp);
+  hw_api_->callbackTrackerCmd(msg);
 }
 
 //}

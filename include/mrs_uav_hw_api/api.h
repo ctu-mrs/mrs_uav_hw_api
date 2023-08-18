@@ -39,25 +39,16 @@ public:
 
   // | --------------------- topic callbacks -------------------- |
 
-  virtual bool callbackActuatorCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>& wrp) = 0;
-
-  virtual bool callbackControlGroupCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>& wrp) = 0;
-
-  virtual bool callbackAttitudeRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>& wrp) = 0;
-
-  virtual bool callbackAttitudeCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>& wrp) = 0;
-
-  virtual bool callbackAccelerationHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>& wrp) = 0;
-
-  virtual bool callbackAccelerationHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>& wrp) = 0;
-
-  virtual bool callbackVelocityHdgRateCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>& wrp) = 0;
-
-  virtual bool callbackVelocityHdgCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>& wrp) = 0;
-
-  virtual bool callbackPositionCmd(mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>& wrp) = 0;
-
-  virtual void callbackTrackerCmd(mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>& wrp) = 0;
+  virtual bool callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPtr msg) = 0;
+  virtual bool callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd::ConstPtr msg) = 0;
+  virtual bool callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd::ConstPtr msg) = 0;
+  virtual bool callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPtr msg) = 0;
+  virtual bool callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerationHdgRateCmd::ConstPtr msg) = 0;
+  virtual bool callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationHdgCmd::ConstPtr msg) = 0;
+  virtual bool callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRateCmd::ConstPtr msg) = 0;
+  virtual bool callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::ConstPtr msg) = 0;
+  virtual bool callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPtr msg) = 0;
+  virtual void callbackTrackerCmd(const mrs_msgs::TrackerCommand::ConstPtr msg) = 0;
 
   // | -------------------- service callbacks ------------------- |
 
