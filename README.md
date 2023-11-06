@@ -8,9 +8,11 @@ An abstraction layer between the [MRS UAV System](https://github.com/ctu-mrs/mrs
 
 ## What does it do?
 
-This nodes provides an interface between any UAV flight controller and the [core](https://github.com/ctu-mrs/mrs_uav_core) of the MRS UAV System.
+This nodes provides an interface between any UAV flight controller (and any Simulator) and the [core](https://github.com/ctu-mrs/mrs_uav_core) of the MRS UAV System.
 On one side, the HW API provides a unified ROS interfaces for the [core](https://github.com/ctu-mrs/mrs_uav_core) as if it was a **generic flight controller**.
 On the other side, the communication with a particular hardware (or simulator) can be orchestrated using whatever is required.
+
+![](./.fig/hw_api.jpg)
 
 ## Implementation
 
