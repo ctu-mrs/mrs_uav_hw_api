@@ -1,3 +1,6 @@
+<<<<<<< Updated upstream
+# MRS UAV HW API
+=======
 # MRS UAV HW API ([Docs](https://ctu-mrs.github.io/mrs_uav_hw_api/))
 
 An abstraction layer between the [MRS UAV System](https://github.com/ctu-mrs/mrs_uav_system) and a UAV flight controller.
@@ -42,3 +45,4 @@ TODO
 * [CoppeliaSim Plugin](https://github.com/ctu-mrs/mrs_uav_coppelia_simulation)
 * [MRS Simulator Plugin](https://github.com/ctu-mrs/mrs_multirotor_simulator)
 * [DJI Tello](https://github.com/ctu-mrs/mrs_uav_dji_tello_api)
+>>>>>>> Stashed changes
