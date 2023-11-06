@@ -28,27 +28,18 @@ namespace mrs_uav_hw_api
 
 //}
 
-typedef std::function<void(const sensor_msgs::NavSatFix &msg)>     publishGNSS_t;
-typedef std::function<void(const sensor_msgs::NavSatStatus &msg)>  publishGNSSStatus_t;
-typedef std::function<void(const mrs_msgs::RtkGps &msg)>           publishRTK_t;
-typedef std::function<void(const mrs_msgs::HwApiAltitude &msg)>    publishAltitude_t;
-typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>   publishMagnetometerHeading_t;
-typedef std::function<void(const sensor_msgs::MagneticField &msg)> publishMagneticField_t;
-typedef std::function<void(const mrs_msgs::HwApiStatus &msg)>      publishStatus_t;
-typedef std::function<void(const mrs_msgs::HwApiRcChannels &msg)>  publishRcChannels_t;
-typedef std::function<void(const sensor_msgs::BatteryState &msg)>  publishBatteryState_t;
-typedef std::function<void(const sensor_msgs::Imu &msg)>           publishIMU_t;
-
-/**
- * @brief The distance sensor is expected to be pointing down towards the ground
- */
-typedef std::function<void(const sensor_msgs::Range &msg)> publishDistanceSensor_t;
-
-/**
- * @brief The UAV Velocity expressed in the UAV Body frame.
- */
+typedef std::function<void(const sensor_msgs::NavSatFix &msg)>           publishGNSS_t;
+typedef std::function<void(const sensor_msgs::NavSatStatus &msg)>        publishGNSSStatus_t;
+typedef std::function<void(const mrs_msgs::RtkGps &msg)>                 publishRTK_t;
+typedef std::function<void(const mrs_msgs::HwApiAltitude &msg)>          publishAltitude_t;
+typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>         publishMagnetometerHeading_t;
+typedef std::function<void(const sensor_msgs::MagneticField &msg)>       publishMagneticField_t;
+typedef std::function<void(const mrs_msgs::HwApiStatus &msg)>            publishStatus_t;
+typedef std::function<void(const mrs_msgs::HwApiRcChannels &msg)>        publishRcChannels_t;
+typedef std::function<void(const sensor_msgs::BatteryState &msg)>        publishBatteryState_t;
+typedef std::function<void(const sensor_msgs::Imu &msg)>                 publishIMU_t;
+typedef std::function<void(const sensor_msgs::Range &msg)>               publishDistanceSensor_t;
 typedef std::function<void(const geometry_msgs::Vector3Stamped &msg)>    publishVelocity_t;
-
 typedef std::function<void(const geometry_msgs::PointStamped &msg)>      publishPosition_t;
 typedef std::function<void(const geometry_msgs::QuaternionStamped &msg)> publishOrientation_t;
 typedef std::function<void(const geometry_msgs::Vector3Stamped &msg)>    publishAngularVelocity_t;
@@ -62,11 +53,19 @@ typedef std::function<void(const nav_msgs::Odometry &msg)>               publish
  */
 struct Publishers_t
 {
-  publishIMU_t                 publishIMU;
-  publishGNSS_t                publishGNSS;
-  publishGNSSStatus_t          publishGNSSStatus;
-  publishRTK_t                 publishRTK;
-  publishDistanceSensor_t      publishDistanceSensor;
+  publishIMU_t        publishIMU;
+  publishGNSS_t       publishGNSS;
+  publishGNSSStatus_t publishGNSSStatus;
+  publishRTK_t        publishRTK;
+
+  /**
+   * @brief The distance sensor is expected to be pointing down towards the ground.
+   */
+  publishDistanceSensor_t publishDistanceSensor;
+
+  /**
+   * @brief Altitude of AMSL (Above Mean Seal Level).
+   */
   publishAltitude_t            publishAltitude;
   publishMagnetometerHeading_t publishMagnetometerHeading;
   publishMagneticField_t       publishMagneticField;
@@ -75,10 +74,14 @@ struct Publishers_t
   publishBatteryState_t        publishBatteryState;
   publishPosition_t            publishPosition;
   publishOrientation_t         publishOrientation;
-  publishVelocity_t            publishVelocity;
-  publishAngularVelocity_t     publishAngularVelocity;
-  publishOdometry_t            publishOdometry;
-  publishOdometry_t            publishGroundTruth;
+
+  /**
+   * @brief The UAV Velocity expressed in the UAV Body frame.
+   */
+  publishVelocity_t        publishVelocity;
+  publishAngularVelocity_t publishAngularVelocity;
+  publishOdometry_t        publishOdometry;
+  publishOdometry_t        publishGroundTruth;
 };
 
 }  // namespace mrs_uav_hw_api
