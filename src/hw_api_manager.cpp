@@ -236,7 +236,7 @@ void HwApiManager::onInit() {
 
   sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>(shopts, "position_cmd", &HwApiManager::callbackPositionCmd, this);
 
-  sh_tracker_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts, "tracker_cmd", &HwApiManager::callbackTrackerCmd, this);
+  sh_tracker_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts, "control_manager/tracker_cmd", &HwApiManager::callbackTrackerCmd, this);
 
   // | ----------------------- publishers ----------------------- |
 
