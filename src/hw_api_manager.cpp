@@ -21,7 +21,6 @@
 #include <geometry_msgs/QuaternionStamped.h>
 
 #include <sensor_msgs/NavSatFix.h>
-#include <sensor_msgs/NavSatStatus.h>
 #include <sensor_msgs/Range.h>
 
 #include <std_msgs/Float64.h>
@@ -105,7 +104,7 @@ private:
   mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities> ph_capabilities_;
 
   mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>     ph_gnss_;
-  mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>  ph_gnss_status_;
+  mrs_lib::PublisherHandler<mrs_msgs::GpsInfo>          ph_gnss_status_;
   mrs_lib::PublisherHandler<mrs_msgs::RtkGps>           ph_rtk_;
   mrs_lib::PublisherHandler<sensor_msgs::Imu>           ph_imu_;
   mrs_lib::PublisherHandler<sensor_msgs::Range>         ph_distance_sensor_;
@@ -127,7 +126,7 @@ private:
   std::string getWorldFrameName(void);
 
   void publishGNSS(const sensor_msgs::NavSatFix& msg);
-  void publishGNSSStatus(const sensor_msgs::NavSatStatus& msg);
+  void publishGNSSStatus(const mrs_msgs::GpsInfo& msg);
   void publishRTK(const mrs_msgs::RtkGps& msg);
   void publishOdometry(const nav_msgs::Odometry& msg);
   void publishGroundTruth(const nav_msgs::Odometry& msg);
@@ -245,7 +244,7 @@ void HwApiManager::onInit() {
   ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected", 1);
 
   ph_gnss_               = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss", 1, false, 50);
-  ph_gnss_status_        = mrs_lib::PublisherHandler<sensor_msgs::NavSatStatus>(nh_, "gnss_status", 1, false, 10);
+  ph_gnss_status_        = mrs_lib::PublisherHandler<mrs_msgs::GpsInfo>(nh_, "gnss_status", 1, false, 10);
   ph_rtk_                = mrs_lib::PublisherHandler<mrs_msgs::RtkGps>(nh_, "rtk", 1, false, 50);
   ph_distance_sensor_    = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor", 1, false, 250);
   ph_mag_heading_        = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading", 1, false, 100);
@@ -629,7 +628,7 @@ void HwApiManager::publishGNSS(const sensor_msgs::NavSatFix& msg) {
 
 /* publishGNSSStatus() //{ */
 
-void HwApiManager::publishGNSSStatus(const sensor_msgs::NavSatStatus& msg) {
+void HwApiManager::publishGNSSStatus(const mrs_msgs::GpsInfo& msg) {
 
   if (!is_initialized_) {
     return;
