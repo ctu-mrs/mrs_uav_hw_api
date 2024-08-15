@@ -3,7 +3,6 @@
 
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
-#include <sensor_msgs/NavSatStatus.h>
 #include <sensor_msgs/Range.h>
 #include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/MagneticField.h>
@@ -14,6 +13,7 @@
 #include <mrs_msgs/HwApiRcChannels.h>
 #include <mrs_msgs/RtkGps.h>
 #include <mrs_msgs/RtkFixType.h>
+#include <mrs_msgs/GpsInfo.h>
 
 #include <mrs_msgs/HwApiAltitude.h>
 
@@ -29,7 +29,7 @@ namespace mrs_uav_hw_api
 //}
 
 typedef std::function<void(const sensor_msgs::NavSatFix &msg)>           publishGNSS_t;
-typedef std::function<void(const sensor_msgs::NavSatStatus &msg)>        publishGNSSStatus_t;
+typedef std::function<void(const mrs_msgs::GpsInfo &msg)>        publishGNSSStatus_t;
 typedef std::function<void(const mrs_msgs::RtkGps &msg)>                 publishRTK_t;
 typedef std::function<void(const mrs_msgs::HwApiAltitude &msg)>          publishAltitude_t;
 typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>         publishMagnetometerHeading_t;
