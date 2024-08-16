@@ -6,7 +6,6 @@
 
   <!-- other args -->
   <arg name="debug" default="false" />
-  <arg name="standalone" default="true" />
   <arg name="bond" default="$(optenv BOND true)" />
   <arg name="nodelet_manager_name" default="$(optenv NODELET_MANAGER)" />
   <arg name="custom_config" default="" />
@@ -39,6 +38,8 @@
       <!-- Parameters -->
       <param name="topic_prefix" type="string" value="/$(arg UAV_NAME)/" />
       <param name="uav_name" type="string" value="$(arg UAV_NAME)" />
+
+      <remap from="~errors" to="errors" />
 
     </node>
 
