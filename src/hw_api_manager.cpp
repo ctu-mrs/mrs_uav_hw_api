@@ -15,6 +15,8 @@
 #include <mrs_uav_hw_api/publishers.h>
 #include <mrs_uav_hw_api/common_handlers.h>
 
+#include <mrs_errorgraph/error_publisher.h>
+
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
 
@@ -56,6 +58,15 @@ private:
   std::string _body_frame_name_;
   std::string _world_frame_name_;
   std::string _topic_prefix_;
+
+  // | ----------------------- errorgraph ----------------------- |
+  enum class error_type_t : uint16_t
+  {
+    version_mismatch,
+    parameter_loading,
+    not_connected,
+  };
+  std::unique_ptr<mrs_errorgraph::ErrorPublisher> error_publisher_;
 
   // | ----------------------- transformer ---------------------- |
 
@@ -172,6 +183,8 @@ void HwApiManager::onInit() {
 
   ros::Time::waitForValid();
 
+  error_publisher_ = std::make_unique<mrs_errorgraph::ErrorPublisher>(nh_, "HwApiManager", "main");
+
   // | ----------------------- load params ---------------------- |
 
   mrs_lib::ParamLoader param_loader(nh_, "HwApiManager");
@@ -179,9 +192,9 @@ void HwApiManager::onInit() {
   param_loader.loadParam("version", _version_);
 
   if (_version_ != VERSION) {
-
     ROS_ERROR("[HwApiManager]: the version of the binary (%s) does not match the config file (%s), please build me!", VERSION, _version_.c_str());
-    ros::shutdown();
+    error_publisher_->addGeneralError(error_type_t::version_mismatch, "Mismatch in binary and config file versions.");
+    error_publisher_->flushAndShutdown();
   }
 
   param_loader.loadParam("hw_interface_plugin", _plugin_address_);
@@ -194,7 +207,8 @@ void HwApiManager::onInit() {
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[HwApiManager]: could not load all parameters!");
-    ros::shutdown();
+    error_publisher_->addGeneralError(error_type_t::parameter_loading, "Could not load all parameters!");
+    error_publisher_->flushAndShutdown();
   }
 
   // | --------------------- tf transformer --------------------- |
@@ -556,6 +570,9 @@ void HwApiManager::timerStatus([[maybe_unused]] const ros::TimerEvent& event) {
   mrs_msgs::HwApiStatus status = hw_api_->getStatus();
 
   ph_status_.publish(status);
+
+  if (!status.connected)
+    error_publisher_->addGeneralError(error_type_t::not_connected, "Not connected.");
 
   if (status.connected) {
 

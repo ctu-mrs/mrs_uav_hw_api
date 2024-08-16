@@ -23,6 +23,7 @@ set(CATKIN_DEPENDENCIES
   roscpp
   sensor_msgs
   std_msgs
+  mrs_errorgraph
   )
 
 find_package(catkin REQUIRED COMPONENTS
