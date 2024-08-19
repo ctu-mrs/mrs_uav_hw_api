@@ -193,7 +193,7 @@ void HwApiManager::onInit() {
 
   if (_version_ != VERSION) {
     ROS_ERROR("[HwApiManager]: the version of the binary (%s) does not match the config file (%s), please build me!", VERSION, _version_.c_str());
-    error_publisher_->addGeneralError(error_type_t::version_mismatch, "Mismatch in binary and config file versions.");
+    error_publisher_->addOneshotError("Mismatch in file versions.");
     error_publisher_->flushAndShutdown();
   }
 
@@ -207,7 +207,7 @@ void HwApiManager::onInit() {
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[HwApiManager]: could not load all parameters!");
-    error_publisher_->addGeneralError(error_type_t::parameter_loading, "Could not load all parameters!");
+    error_publisher_->addOneshotError("Could not load all parameters.");
     error_publisher_->flushAndShutdown();
   }
 
