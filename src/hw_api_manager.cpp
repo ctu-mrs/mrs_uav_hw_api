@@ -326,12 +326,14 @@ void HwApiManager::onInit() {
   catch (pluginlib::CreateClassException& ex1) {
     ROS_ERROR("[HwApiManager]: CreateClassException for the plugin '%s'", _plugin_address_.c_str());
     ROS_ERROR("[HwApiManager]: Error: %s", ex1.what());
-    ros::shutdown();
+    error_publisher_->addOneshotError("Initialization error: plugin exception.");
+    error_publisher_->flushAndShutdown();
   }
   catch (pluginlib::PluginlibException& ex) {
     ROS_ERROR("[HwApiManager]: PluginlibException for the plugin '%s'", _plugin_address_.c_str());
     ROS_ERROR("[HwApiManager]: Error: %s", ex.what());
-    ros::shutdown();
+    error_publisher_->addOneshotError("Initialization error: plugin exception.");
+    error_publisher_->flushAndShutdown();
   }
 
   // | ------------------ initialize the plugin ----------------- |
