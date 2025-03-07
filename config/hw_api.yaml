@@ -14,12 +14,13 @@ timers:
 publish_rate:
   status: 1
   connected: 1
+  capabilities: 1
   gnss: 50
   gnss_status: 10
   rtk: 50
   distance_sensor: 250
   mag_heading: 100
-  magnetic_field: 100
+  mag_magnetic_field: 100
   altitude: 100
   imu: 500
   rc_channels: 100

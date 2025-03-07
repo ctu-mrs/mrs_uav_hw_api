@@ -218,23 +218,23 @@ void HwApiManager::onInit() {
   param_loader.loadParam("publish_rate/connected", _pub_connected_rate_);
   param_loader.loadParam("publish_rate/capabilities", _pub_capabilities_rate_);
 
-  param_loader.loadParam("publish_rate/gnss_rate", _pub_gnss_rate_);
-  param_loader.loadParam("publish_rate/gnss_status_rate", _pub_gnss_status_rate_);
-  param_loader.loadParam("publish_rate/rtk_rate", _pub_rtk_rate_);
-  param_loader.loadParam("publish_rate/imu_rate", _pub_imu_rate_);
-  param_loader.loadParam("publish_rate/distance_sensor_rate", _pub_distance_sensor_rate_);
-  param_loader.loadParam("publish_rate/altitude_rate", _pub_altitude_rate_);
-  param_loader.loadParam("publish_rate/mag_heading_rate", _pub_mag_heading_rate_);
-  param_loader.loadParam("publish_rate/mag_magnetic_field_rate", _pub_mag_magnetic_field_rate_);
-  param_loader.loadParam("publish_rate/rc_channels_rate", _pub_rc_channels_rate_);
-  param_loader.loadParam("publish_rate/battery_state_rate", _pub_battery_state_rate_);
+  param_loader.loadParam("publish_rate/gnss", _pub_gnss_rate_);
+  param_loader.loadParam("publish_rate/gnss_status", _pub_gnss_status_rate_);
+  param_loader.loadParam("publish_rate/rtk", _pub_rtk_rate_);
+  param_loader.loadParam("publish_rate/imu", _pub_imu_rate_);
+  param_loader.loadParam("publish_rate/distance_sensor", _pub_distance_sensor_rate_);
+  param_loader.loadParam("publish_rate/altitude", _pub_altitude_rate_);
+  param_loader.loadParam("publish_rate/mag_heading", _pub_mag_heading_rate_);
+  param_loader.loadParam("publish_rate/mag_magnetic_field", _pub_mag_magnetic_field_rate_);
+  param_loader.loadParam("publish_rate/rc_channels", _pub_rc_channels_rate_);
+  param_loader.loadParam("publish_rate/battery_state", _pub_battery_state_rate_);
 
-  param_loader.loadParam("publish_rate/position_rate", _pub_position_rate_);
-  param_loader.loadParam("publish_rate/velocity_rate", _pub_velocity_rate_);
-  param_loader.loadParam("publish_rate/orientation_rate", _pub_orientation_rate_);
-  param_loader.loadParam("publish_rate/angular_velocity_rate", _pub_angular_velocity_rate_);
-  param_loader.loadParam("publish_rate/odometry_rate", _pub_odometry_rate_);
-  param_loader.loadParam("publish_rate/ground_truth_rate", _pub_ground_truth_rate_);
+  param_loader.loadParam("publish_rate/position", _pub_position_rate_);
+  param_loader.loadParam("publish_rate/velocity", _pub_velocity_rate_);
+  param_loader.loadParam("publish_rate/orientation", _pub_orientation_rate_);
+  param_loader.loadParam("publish_rate/angular_velocity", _pub_angular_velocity_rate_);
+  param_loader.loadParam("publish_rate/odometry", _pub_odometry_rate_);
+  param_loader.loadParam("publish_rate/ground_truth", _pub_ground_truth_rate_);
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[HwApiManager]: could not load all parameters!");
