@@ -51,6 +51,28 @@ private:
   double _timer_diagnostics_rate_;
   double _timer_mode_rate_;
 
+  double _pub_status_rate_;
+  double _pub_connected_rate_;
+  double _pub_capabilities_rate_;
+
+  double _pub_gnss_rate_;
+  double _pub_gnss_status_rate_;
+  double _pub_rtk_rate_;
+  double _pub_imu_rate_;
+  double _pub_distance_sensor_rate_;
+  double _pub_altitude_rate_;
+  double _pub_mag_heading_rate_;
+  double _pub_mag_magnetic_field_rate_;
+  double _pub_rc_channels_rate_;
+  double _pub_battery_state_rate_;
+
+  double _pub_position_rate_;
+  double _pub_velocity_rate_;
+  double _pub_orientation_rate_;
+  double _pub_angular_velocity_rate_;
+  double _pub_odometry_rate_;
+  double _pub_ground_truth_rate_;
+
   std::string _plugin_address_;
   std::string _uav_name_;
   std::string _body_frame_name_;
@@ -192,6 +214,28 @@ void HwApiManager::onInit() {
   param_loader.loadParam("timers/diagnostics/rate", _timer_diagnostics_rate_);
   param_loader.loadParam("timers/mode/rate", _timer_mode_rate_);
 
+  param_loader.loadParam("publish_rate/status", _pub_status_rate_);
+  param_loader.loadParam("publish_rate/connected", _pub_connected_rate_);
+  param_loader.loadParam("publish_rate/capabilities", _pub_capabilities_rate_);
+
+  param_loader.loadParam("publish_rate/gnss_rate", _pub_gnss_rate_);
+  param_loader.loadParam("publish_rate/gnss_status_rate", _pub_gnss_status_rate_);
+  param_loader.loadParam("publish_rate/rtk_rate", _pub_rtk_rate_);
+  param_loader.loadParam("publish_rate/imu_rate", _pub_imu_rate_);
+  param_loader.loadParam("publish_rate/distance_sensor_rate", _pub_distance_sensor_rate_);
+  param_loader.loadParam("publish_rate/altitude_rate", _pub_altitude_rate_);
+  param_loader.loadParam("publish_rate/mag_heading_rate", _pub_mag_heading_rate_);
+  param_loader.loadParam("publish_rate/mag_magnetic_field_rate", _pub_mag_magnetic_field_rate_);
+  param_loader.loadParam("publish_rate/rc_channels_rate", _pub_rc_channels_rate_);
+  param_loader.loadParam("publish_rate/battery_state_rate", _pub_battery_state_rate_);
+
+  param_loader.loadParam("publish_rate/position_rate", _pub_position_rate_);
+  param_loader.loadParam("publish_rate/velocity_rate", _pub_velocity_rate_);
+  param_loader.loadParam("publish_rate/orientation_rate", _pub_orientation_rate_);
+  param_loader.loadParam("publish_rate/angular_velocity_rate", _pub_angular_velocity_rate_);
+  param_loader.loadParam("publish_rate/odometry_rate", _pub_odometry_rate_);
+  param_loader.loadParam("publish_rate/ground_truth_rate", _pub_ground_truth_rate_);
+
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[HwApiManager]: could not load all parameters!");
     ros::shutdown();
@@ -240,27 +284,27 @@ void HwApiManager::onInit() {
 
   // | ----------------------- publishers ----------------------- |
 
-  ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities", 1);
-  ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status", 1);
-  ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected", 1);
+  ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities", _pub_capabilities_rate_);
+  ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status", _pub_status_rate_);
+  ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected", _pub_connected_rate_);
 
-  ph_gnss_               = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss", 1, false, 50);
-  ph_gnss_status_        = mrs_lib::PublisherHandler<mrs_msgs::GpsInfo>(nh_, "gnss_status", 1, false, 10);
-  ph_rtk_                = mrs_lib::PublisherHandler<mrs_msgs::RtkGps>(nh_, "rtk", 1, false, 50);
-  ph_distance_sensor_    = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor", 1, false, 250);
-  ph_mag_heading_        = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading", 1, false, 100);
-  ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::MagneticField>(nh_, "magnetic_field", 1, false, 100);
-  ph_altitude_           = mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>(nh_, "altitude", 1, false, 100);
-  ph_imu_                = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu", 1, false, 500);
-  ph_rc_channels_        = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels", 1, false, 100);
-  ph_battery_state_      = mrs_lib::PublisherHandler<sensor_msgs::BatteryState>(nh_, "battery_state", 1, false, 100);
+  ph_gnss_               = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss", 1, false, _pub_gnss_rate_);
+  ph_gnss_status_        = mrs_lib::PublisherHandler<mrs_msgs::GpsInfo>(nh_, "gnss_status", 1, false, _pub_gnss_status_rate_);
+  ph_rtk_                = mrs_lib::PublisherHandler<mrs_msgs::RtkGps>(nh_, "rtk", 1, false, _pub_rtk_rate_);
+  ph_distance_sensor_    = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor", 1, false, _pub_distance_sensor_rate_);
+  ph_mag_heading_        = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading", 1, false, _pub_mag_heading_rate_);
+  ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::MagneticField>(nh_, "magnetic_field", 1, false, _pub_mag_magnetic_field_rate_);
+  ph_altitude_           = mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>(nh_, "altitude", 1, false, _pub_altitude_rate_);
+  ph_imu_                = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu", 1, false, _pub_imu_rate_);
+  ph_rc_channels_        = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels", 1, false, _pub_rc_channels_rate_);
+  ph_battery_state_      = mrs_lib::PublisherHandler<sensor_msgs::BatteryState>(nh_, "battery_state", 1, false, _pub_battery_state_rate_);
 
-  ph_position_         = mrs_lib::PublisherHandler<geometry_msgs::PointStamped>(nh_, "position", 1, false, 250);
-  ph_orientation_      = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation", 1, false, 250);
-  ph_velocity_         = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "velocity", 1, false, 250);
-  ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "angular_velocity", 1, false, 500);
-  ph_odometry_         = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry", 1, false, 250);
-  ph_ground_truth_     = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "ground_truth", 1, false, 250);
+  ph_position_         = mrs_lib::PublisherHandler<geometry_msgs::PointStamped>(nh_, "position", 1, false, _pub_position_rate_);
+  ph_orientation_      = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation", 1, false, _pub_orientation_rate_);
+  ph_velocity_         = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "velocity", 1, false, _pub_velocity_rate_);
+  ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "angular_velocity", 1, false, _pub_angular_velocity_rate_);
+  ph_odometry_         = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry", 1, false, _pub_odometry_rate_);
+  ph_ground_truth_     = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "ground_truth", 1, false, _pub_ground_truth_rate_);
 
   // | --------------------- service servers -------------------- |
 

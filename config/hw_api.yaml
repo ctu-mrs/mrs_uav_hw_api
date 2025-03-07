@@ -10,3 +10,23 @@ timers:
     rate: 100 # [Hz]
   mode:
     rate: 1 # [Hz]
+
+publish_rate:
+  status: 1
+  connected: 1
+  gnss: 50
+  gnss_status: 10
+  rtk: 50
+  distance_sensor: 250
+  mag_heading: 100
+  magnetic_field: 100
+  altitude: 100
+  imu: 500
+  rc_channels: 100
+  battery_state: 100
+  position: 250
+  orientation: 250
+  velocity: 250
+  angular_velocity: 500
+  odometry: 250
+  ground_truth: 250
