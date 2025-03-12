@@ -1,49 +1,49 @@
 #ifndef PUBLISHERS_H
 #define PUBLISHERS_H
 
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/NavSatFix.h>
-#include <sensor_msgs/Range.h>
-#include <sensor_msgs/BatteryState.h>
-#include <sensor_msgs/MagneticField.h>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <sensor_msgs/msg/range.hpp>
+#include <sensor_msgs/msg/battery_state.hpp>
+#include <sensor_msgs/msg/magnetic_field.hpp>
 
-#include <mrs_msgs/Float64Stamped.h>
+#include <mrs_msgs/msg/float64_stamped.hpp>
 
-#include <mrs_msgs/HwApiStatus.h>
-#include <mrs_msgs/HwApiRcChannels.h>
-#include <mrs_msgs/RtkGps.h>
-#include <mrs_msgs/RtkFixType.h>
-#include <mrs_msgs/GpsInfo.h>
+#include <mrs_msgs/msg/hw_api_status.hpp>
+#include <mrs_msgs/msg/hw_api_rc_channels.hpp>
+#include <mrs_msgs/msg/rtk_gps.hpp>
+#include <mrs_msgs/msg/rtk_fix_type.hpp>
+#include <mrs_msgs/msg/gps_info.hpp>
 
-#include <mrs_msgs/HwApiAltitude.h>
+#include <mrs_msgs/msg/hw_api_altitude.hpp>
 
-#include <nav_msgs/Odometry.h>
+#include <nav_msgs/msg/odometry.hpp>
 
-#include <geometry_msgs/QuaternionStamped.h>
-#include <geometry_msgs/Vector3Stamped.h>
-#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/msg/quaternion_stamped.hpp>
+#include <geometry_msgs/msg/vector3_stamped.hpp>
+#include <geometry_msgs/msg/point_stamped.hpp>
 
 namespace mrs_uav_hw_api
 {
 
 //}
 
-typedef std::function<void(const sensor_msgs::NavSatFix &msg)>           publishGNSS_t;
-typedef std::function<void(const mrs_msgs::GpsInfo &msg)>        publishGNSSStatus_t;
-typedef std::function<void(const mrs_msgs::RtkGps &msg)>                 publishRTK_t;
-typedef std::function<void(const mrs_msgs::HwApiAltitude &msg)>          publishAltitude_t;
-typedef std::function<void(const mrs_msgs::Float64Stamped &msg)>         publishMagnetometerHeading_t;
-typedef std::function<void(const sensor_msgs::MagneticField &msg)>       publishMagneticField_t;
-typedef std::function<void(const mrs_msgs::HwApiStatus &msg)>            publishStatus_t;
-typedef std::function<void(const mrs_msgs::HwApiRcChannels &msg)>        publishRcChannels_t;
-typedef std::function<void(const sensor_msgs::BatteryState &msg)>        publishBatteryState_t;
-typedef std::function<void(const sensor_msgs::Imu &msg)>                 publishIMU_t;
-typedef std::function<void(const sensor_msgs::Range &msg)>               publishDistanceSensor_t;
-typedef std::function<void(const geometry_msgs::Vector3Stamped &msg)>    publishVelocity_t;
-typedef std::function<void(const geometry_msgs::PointStamped &msg)>      publishPosition_t;
-typedef std::function<void(const geometry_msgs::QuaternionStamped &msg)> publishOrientation_t;
-typedef std::function<void(const geometry_msgs::Vector3Stamped &msg)>    publishAngularVelocity_t;
-typedef std::function<void(const nav_msgs::Odometry &msg)>               publishOdometry_t;
+typedef std::function<void(const sensor_msgs::msg::NavSatFix &msg)>           publishGNSS_t;
+typedef std::function<void(const mrs_msgs::msg::GpsInfo &msg)>                publishGNSSStatus_t;
+typedef std::function<void(const mrs_msgs::msg::RtkGps &msg)>                 publishRTK_t;
+typedef std::function<void(const mrs_msgs::msg::HwApiAltitude &msg)>          publishAltitude_t;
+typedef std::function<void(const mrs_msgs::msg::Float64Stamped &msg)>         publishMagnetometerHeading_t;
+typedef std::function<void(const sensor_msgs::msg::MagneticField &msg)>       publishMagneticField_t;
+typedef std::function<void(const mrs_msgs::msg::HwApiStatus &msg)>            publishStatus_t;
+typedef std::function<void(const mrs_msgs::msg::HwApiRcChannels &msg)>        publishRcChannels_t;
+typedef std::function<void(const sensor_msgs::msg::BatteryState &msg)>        publishBatteryState_t;
+typedef std::function<void(const sensor_msgs::msg::Imu &msg)>                 publishIMU_t;
+typedef std::function<void(const sensor_msgs::msg::Range &msg)>               publishDistanceSensor_t;
+typedef std::function<void(const geometry_msgs::msg::Vector3Stamped &msg)>    publishVelocity_t;
+typedef std::function<void(const geometry_msgs::msg::PointStamped &msg)>      publishPosition_t;
+typedef std::function<void(const geometry_msgs::msg::QuaternionStamped &msg)> publishOrientation_t;
+typedef std::function<void(const geometry_msgs::msg::Vector3Stamped &msg)>    publishAngularVelocity_t;
+typedef std::function<void(const nav_msgs::msg::Odometry &msg)>               publishOdometry_t;
 
 /**
  * @brief A structure with publisher methods provided to the HW API Plugin.

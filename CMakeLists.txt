@@ -1,97 +1,101 @@
 cmake_minimum_required(VERSION 3.5)
 project(mrs_uav_hw_api)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_definitions(-Wall)
-add_definitions(-Wextra)
-
-if(COVERAGE)
-  message(WARNING "building with --coverage, the performance might be limited")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+# set the compile options to show code warnings
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(CATKIN_DEPENDENCIES
-  cmake_modules
-  geometry_msgs
-  mrs_lib
+set(DEPENDENCIES
+  ament_cmake
+  ament_cmake_ros
+  rclcpp
+  rclcpp_components
+  pluginlib
   mrs_msgs
+  mrs_lib
+  geometry_msgs
   nav_msgs
-  nodelet
-  roscpp
-  sensor_msgs
   std_msgs
-  )
+  sensor_msgs
+  Eigen3
+)
 
-find_package(catkin REQUIRED COMPONENTS
-  ${CATKIN_DEPENDENCIES}
-  )
+foreach(DEP IN LISTS DEPENDENCIES)
+  find_package(${DEP} REQUIRED)
+endforeach()
 
 set(LIBRARIES
-  MrsUavHwApi_HwApi MrsUavHwApi_DummyApi
-  )
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${LIBRARIES}
-  CATKIN_DEPENDS ${CATKIN_DEPENDENCIES}
+  MrsUavHwApi_HwApiManager
+  MrsUavHwApi_DummyApi
   )
 
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
   )
 
-# MrsUavHwApi_HwApi
+# MrsUavHwApi_HwApiManager
 
-add_library(MrsUavHwApi_HwApi
+add_library(MrsUavHwApi_HwApiManager SHARED
   src/hw_api_manager.cpp
   )
 
-add_dependencies(MrsUavHwApi_HwApi
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-  )
+ament_target_dependencies(MrsUavHwApi_HwApiManager
+  ${DEPENDENCIES}
+)
 
-target_link_libraries(MrsUavHwApi_HwApi
-  ${catkin_LIBRARIES}
-  )
+rclcpp_components_register_nodes(MrsUavHwApi_HwApiManager PLUGIN "mrs_uav_hw_api::HwApiManager" EXECUTABLE MrsUavHwApi_HwApiManager)
 
-# DummyApi
+# MrsUavHwApi_DummyApi
 
-add_library(MrsUavHwApi_DummyApi
+add_library(MrsUavHwApi_DummyApi SHARED
   src/dummy_api.cpp
   )
 
-add_dependencies(MrsUavHwApi_DummyApi
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-  )
+ament_target_dependencies(MrsUavHwApi_DummyApi
+  ${DEPENDENCIES}
+)
 
-target_link_libraries(MrsUavHwApi_DummyApi
-  ${catkin_LIBRARIES}
-  )
+# <package of the base class>, <relative path to the xml>
+pluginlib_export_plugin_description_file(mrs_uav_hw_api plugins.xml)
 
 ## --------------------------------------------------------------
 ## |                           Install                          |
 ## --------------------------------------------------------------
 
-install(TARGETS ${LIBRARIES}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+install(
+  TARGETS ${LIBRARIES}
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
   )
 
-install(DIRECTORY launch config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
 
-install(DIRECTORY include/mrs_uav_hw_api/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  )
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
-install(FILES plugins.xml nodelets.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_export_include_directories("include")
+
+ament_export_libraries(
+  ${LIBRARIES}
+)
+
+ament_export_targets(
+  export_${PROJECT_NAME}
+)
+
+ament_package()

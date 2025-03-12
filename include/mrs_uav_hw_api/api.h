@@ -3,24 +3,24 @@
 
 /* includes //{ */
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <mrs_lib/subscribe_handler.h>
+#include <mrs_lib/subscriber_handler.h>
 
 #include <mrs_uav_hw_api/common_handlers.h>
 
-#include <mrs_msgs/HwApiActuatorCmd.h>
-#include <mrs_msgs/HwApiControlGroupCmd.h>
-#include <mrs_msgs/HwApiAttitudeCmd.h>
-#include <mrs_msgs/HwApiAttitudeRateCmd.h>
-#include <mrs_msgs/HwApiAccelerationHdgRateCmd.h>
-#include <mrs_msgs/HwApiAccelerationHdgCmd.h>
-#include <mrs_msgs/HwApiVelocityHdgRateCmd.h>
-#include <mrs_msgs/HwApiVelocityHdgCmd.h>
-#include <mrs_msgs/HwApiPositionCmd.h>
-#include <mrs_msgs/HwApiStatus.h>
-#include <mrs_msgs/HwApiCapabilities.h>
-#include <mrs_msgs/TrackerCommand.h>
+#include <mrs_msgs/msg/hw_api_actuator_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_control_group_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_attitude_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_attitude_rate_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_acceleration_hdg_rate_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_acceleration_hdg_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_velocity_hdg_rate_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_velocity_hdg_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_position_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_status.hpp>
+#include <mrs_msgs/msg/hw_api_capabilities.hpp>
+#include <mrs_msgs/msg/tracker_command.hpp>
 
 //}
 
@@ -36,10 +36,10 @@ public:
   /**
    * @brief The initialization method. This will be called only once at the beginning of the lifetime of the plugin (after initialize()).
    *
-   * @param parent_nh Node handle of the HW API plugin manager. Use this to create subscibers, publisher, etc.
+   * @param node Node handle - Use this to create subscibers, publisher, etc.
    * @param common_handlers Structure pre-filled with useful variables, methods and objects that the plugin can use.
    */
-  virtual void initialize(const ros::NodeHandle& parent_nh, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) = 0;
+  virtual void initialize(const rclcpp::Node::SharedPtr& node, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) = 0;
 
   /**
    * @brief Method for acquiring the HW API plugin's status. This method will be called repeatedly to obtain the status, which will be publisher by the plugin
@@ -47,14 +47,14 @@ public:
    *
    * @return The status ROS message.
    */
-  virtual mrs_msgs::HwApiStatus getStatus() = 0;
+  virtual mrs_msgs::msg::HwApiStatus getStatus() = 0;
 
   /**
    * @brief Method for obtaining the capabilities of the HW API Plugin. This method will be called repeatedly (after initialize()).
    *
    * @return The capabilities ROS message.
    */
-  virtual mrs_msgs::HwApiCapabilities getCapabilities() = 0;
+  virtual mrs_msgs::msg::HwApiCapabilities getCapabilities() = 0;
 
   // --------------------------------------------------------------
   // |                       topic callbacks                      |
@@ -67,7 +67,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPtr msg) = 0;
+  virtual bool callbackActuatorCmd(const mrs_msgs::msg::HwApiActuatorCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming ControlGroupCmd control reference.
@@ -76,7 +76,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd::ConstPtr msg) = 0;
+  virtual bool callbackControlGroupCmd(const mrs_msgs::msg::HwApiControlGroupCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming AttitudeRate+ThrottleCmd control reference.
@@ -85,7 +85,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd::ConstPtr msg) = 0;
+  virtual bool callbackAttitudeRateCmd(const mrs_msgs::msg::HwApiAttitudeRateCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming Attitude+ThrottleCmd control reference.
@@ -94,7 +94,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPtr msg) = 0;
+  virtual bool callbackAttitudeCmd(const mrs_msgs::msg::HwApiAttitudeCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming Acceleration+HdgRateCmd control reference.
@@ -103,7 +103,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerationHdgRateCmd::ConstPtr msg) = 0;
+  virtual bool callbackAccelerationHdgRateCmd(const mrs_msgs::msg::HwApiAccelerationHdgRateCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming Acceleration+HdgCmd control reference.
@@ -112,7 +112,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationHdgCmd::ConstPtr msg) = 0;
+  virtual bool callbackAccelerationHdgCmd(const mrs_msgs::msg::HwApiAccelerationHdgCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming Velocity+HdgRateCmd control reference.
@@ -121,7 +121,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRateCmd::ConstPtr msg) = 0;
+  virtual bool callbackVelocityHdgRateCmd(const mrs_msgs::msg::HwApiVelocityHdgRateCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming Velocity+HdgCmd control reference.
@@ -130,7 +130,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::ConstPtr msg) = 0;
+  virtual bool callbackVelocityHdgCmd(const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming Velocity+PositionCmd control reference.
@@ -139,7 +139,7 @@ public:
    *
    * @return success (true if processed).
    */
-  virtual bool callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPtr msg) = 0;
+  virtual bool callbackPositionCmd(const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming TrackerCommand. The tracker command is provided by the reference generator of the MRS UAV System and it can be used as a
@@ -147,7 +147,7 @@ public:
    *
    * @param msg incoming ROS message
    */
-  virtual void callbackTrackerCmd(const mrs_msgs::TrackerCommand::ConstPtr msg) = 0;
+  virtual void callbackTrackerCmd(const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg) = 0;
 
   // --------------------------------------------------------------
   // |                      service callbacks                     |

@@ -1,33 +1,30 @@
-version: "1.0.0.0"
+version: "2.0.0.0"
 
-hw_interface_plugin: "mrs_uav_hw_api/DummyApi"
+hw_interface_plugin: "mrs_uav_hw_api::DummyApi"
 
 body_frame_name: "fcu"
 world_frame_name: "hw_api_world"
 
 timers:
   diagnostics:
-    rate: 100 # [Hz]
+    rate: 100.0 # [Hz]
   mode:
-    rate: 1 # [Hz]
+    rate: 1.0 # [Hz]
 
 publish_rate:
-  status: 1
-  connected: 1
-  capabilities: 1
-  gnss: 50
-  gnss_status: 10
-  rtk: 50
-  distance_sensor: 250
-  mag_heading: 100
-  mag_magnetic_field: 100
-  altitude: 100
-  imu: 500
-  rc_channels: 100
-  battery_state: 100
-  position: 250
-  orientation: 250
-  velocity: 250
-  angular_velocity: 500
-  odometry: 250
-  ground_truth: 250
+  gnss: 50.0
+  gnss_status: 10.0
+  rtk: 50.0
+  distance_sensor: 250.0
+  mag_heading: 100.0
+  mag_magnetic_field: 100.0
+  altitude: 100.0
+  imu: 500.0
+  rc_channels: 100.0
+  battery_state: 100.0
+  position: 250.0
+  orientation: 250.0
+  velocity: 250.0
+  angular_velocity: 500.0
+  odometry: 250.0
+  ground_truth: 250.0

@@ -1,33 +1,38 @@
-#define VERSION "1.0.0.0"
+#define VERSION "2.0.0.0"
 
 /* includes //{ */
 
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <nodelet/nodelet.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <mrs_lib/param_loader.h>
-#include <mrs_lib/subscribe_handler.h>
+#include <mrs_lib/subscriber_handler.h>
 #include <mrs_lib/transformer.h>
 #include <mrs_lib/publisher_handler.h>
+#include <mrs_lib/timer_handler.h>
 
 #include <mrs_uav_hw_api/api.h>
 #include <mrs_uav_hw_api/publishers.h>
 #include <mrs_uav_hw_api/common_handlers.h>
 
-#include <std_srvs/SetBool.h>
-#include <std_srvs/Trigger.h>
+#include <std_srvs/srv/set_bool.hpp>
+#include <std_srvs/srv/trigger.hpp>
 
-#include <geometry_msgs/QuaternionStamped.h>
+#include <geometry_msgs/msg/quaternion_stamped.hpp>
 
-#include <sensor_msgs/NavSatFix.h>
-#include <sensor_msgs/Range.h>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <sensor_msgs/msg/range.hpp>
 
-#include <std_msgs/Float64.h>
-#include <std_msgs/Empty.h>
-#include <mrs_msgs/Float64Stamped.h>
+#include <std_msgs/msg/float64.hpp>
+#include <std_msgs/msg/empty.hpp>
+#include <mrs_msgs/msg/float64_stamped.hpp>
 
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
+
+//}
+
+/* using //{ */
+
+using namespace std::chrono_literals;
 
 //}
 
@@ -36,24 +41,24 @@ namespace mrs_uav_hw_api
 
 /* class HwApiManager //{ */
 
-class HwApiManager : public nodelet::Nodelet {
+class HwApiManager : public rclcpp::Node {
 
 public:
-  virtual void onInit();
+  HwApiManager(rclcpp::NodeOptions options);
 
 private:
-  ros::NodeHandle   nh_;
-  std::string       _version_;
-  std::atomic<bool> is_initialized_ = false;
+  rclcpp::Node::SharedPtr  node_;
+  rclcpp::Clock::SharedPtr clock_;
+  std::string              _version_;
+  std::atomic<bool>        is_initialized_ = false;
+
+  rclcpp::TimerBase::SharedPtr timer_init_;
+  void                         timerInit();
 
   // | ----------------------- parameters ----------------------- |
 
   double _timer_diagnostics_rate_;
   double _timer_mode_rate_;
-
-  double _pub_status_rate_;
-  double _pub_connected_rate_;
-  double _pub_capabilities_rate_;
 
   double _pub_gnss_rate_;
   double _pub_gnss_status_rate_;
@@ -86,7 +91,7 @@ private:
   // | ---------------------- plugin loader --------------------- |
 
   std::unique_ptr<pluginlib::ClassLoader<mrs_uav_hw_api::MrsUavHwApi>> plugin_loader_;
-  boost::shared_ptr<mrs_uav_hw_api::MrsUavHwApi>                       hw_api_;
+  std::shared_ptr<mrs_uav_hw_api::MrsUavHwApi>                         hw_api_;
 
   // | --------------------- common handlers -------------------- |
 
@@ -96,114 +101,124 @@ private:
 
   // | ----------------------- subscribers ---------------------- |
 
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>            sh_actuator_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>        sh_control_group_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>        sh_attitude_rate_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>            sh_attitude_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd> sh_acceleration_hdg_rate_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>     sh_acceleration_hdg_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>     sh_velocity_hdg_rate_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>         sh_velocity_hdg_cmd_;
-  mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>            sh_position_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiActuatorCmd>            sh_actuator_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>        sh_control_group_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>        sh_attitude_rate_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeCmd>            sh_attitude_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd> sh_acceleration_hdg_rate_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>     sh_acceleration_hdg_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>     sh_velocity_hdg_rate_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>         sh_velocity_hdg_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>            sh_position_cmd_;
 
-  mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand> sh_tracker_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand> sh_tracker_cmd_;
 
-  void callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPtr msg);
-  void callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd::ConstPtr msg);
-  void callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd::ConstPtr msg);
-  void callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPtr msg);
-  void callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerationHdgRateCmd::ConstPtr msg);
-  void callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationHdgCmd::ConstPtr msg);
-  void callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRateCmd::ConstPtr msg);
-  void callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::ConstPtr msg);
-  void callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPtr msg);
-  void callbackTrackerCmd(const mrs_msgs::TrackerCommand::ConstPtr msg);
+  void callbackActuatorCmd(const mrs_msgs::msg::HwApiActuatorCmd::ConstSharedPtr msg);
+  void callbackControlGroupCmd(const mrs_msgs::msg::HwApiControlGroupCmd::ConstSharedPtr msg);
+  void callbackAttitudeRateCmd(const mrs_msgs::msg::HwApiAttitudeRateCmd::ConstSharedPtr msg);
+  void callbackAttitudeCmd(const mrs_msgs::msg::HwApiAttitudeCmd::ConstSharedPtr msg);
+  void callbackAccelerationHdgRateCmd(const mrs_msgs::msg::HwApiAccelerationHdgRateCmd::ConstSharedPtr msg);
+  void callbackAccelerationHdgCmd(const mrs_msgs::msg::HwApiAccelerationHdgCmd::ConstSharedPtr msg);
+  void callbackVelocityHdgRateCmd(const mrs_msgs::msg::HwApiVelocityHdgRateCmd::ConstSharedPtr msg);
+  void callbackVelocityHdgCmd(const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr msg);
+  void callbackPositionCmd(const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg);
+  void callbackTrackerCmd(const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg);
 
   // | ----------------------- publishers ----------------------- |
 
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>       ph_status_;
-  mrs_lib::PublisherHandler<std_msgs::Empty>             ph_connected_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities> ph_capabilities_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiStatus>       ph_status_;
+  mrs_lib::PublisherHandler<std_msgs::msg::Empty>             ph_connected_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiCapabilities> ph_capabilities_;
 
-  mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>     ph_gnss_;
-  mrs_lib::PublisherHandler<mrs_msgs::GpsInfo>          ph_gnss_status_;
-  mrs_lib::PublisherHandler<mrs_msgs::RtkGps>           ph_rtk_;
-  mrs_lib::PublisherHandler<sensor_msgs::Imu>           ph_imu_;
-  mrs_lib::PublisherHandler<sensor_msgs::Range>         ph_distance_sensor_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>    ph_altitude_;
-  mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>   ph_mag_heading_;
-  mrs_lib::PublisherHandler<sensor_msgs::MagneticField> ph_mag_magnetic_field_;
-  mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>  ph_rc_channels_;
-  mrs_lib::PublisherHandler<sensor_msgs::BatteryState>  ph_battery_state_;
+  mrs_lib::PublisherHandler<sensor_msgs::msg::NavSatFix>     ph_gnss_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::GpsInfo>          ph_gnss_status_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::RtkGps>           ph_rtk_;
+  mrs_lib::PublisherHandler<sensor_msgs::msg::Imu>           ph_imu_;
+  mrs_lib::PublisherHandler<sensor_msgs::msg::Range>         ph_distance_sensor_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiAltitude>    ph_altitude_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>   ph_mag_heading_;
+  mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField> ph_mag_magnetic_field_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcChannels>  ph_rc_channels_;
+  mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>  ph_battery_state_;
 
-  mrs_lib::PublisherHandler<geometry_msgs::PointStamped>      ph_position_;
-  mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>    ph_velocity_;
-  mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped> ph_orientation_;
-  mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>    ph_angular_velocity_;
-  mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_odometry_;
-  mrs_lib::PublisherHandler<nav_msgs::Odometry>               ph_ground_truth_;
+  mrs_lib::PublisherHandler<geometry_msgs::msg::PointStamped>      ph_position_;
+  mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>    ph_velocity_;
+  mrs_lib::PublisherHandler<geometry_msgs::msg::QuaternionStamped> ph_orientation_;
+  mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>    ph_angular_velocity_;
+  mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>               ph_odometry_;
+  mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>               ph_ground_truth_;
 
   std::string getUavName(void);
   std::string getBodyFrameName(void);
   std::string getWorldFrameName(void);
 
-  void publishGNSS(const sensor_msgs::NavSatFix& msg);
-  void publishGNSSStatus(const mrs_msgs::GpsInfo& msg);
-  void publishRTK(const mrs_msgs::RtkGps& msg);
-  void publishOdometry(const nav_msgs::Odometry& msg);
-  void publishGroundTruth(const nav_msgs::Odometry& msg);
-  void publishIMU(const sensor_msgs::Imu& msg);
-  void publishDistanceSensor(const sensor_msgs::Range& msg);
-  void publishAltitude(const mrs_msgs::HwApiAltitude& msg);
-  void publishMagnetometerHeading(const mrs_msgs::Float64Stamped& msg);
-  void publishMagneticField(const sensor_msgs::MagneticField& msg);
-  void publishStatus(const mrs_msgs::HwApiStatus& msg);
-  void publishRcChannels(const mrs_msgs::HwApiRcChannels& msg);
-  void publishOrientation(const geometry_msgs::QuaternionStamped& msg);
-  void publishPosition(const geometry_msgs::PointStamped& msg);
-  void publishVelocity(const geometry_msgs::Vector3Stamped& msg);
-  void publishAngularVelocity(const geometry_msgs::Vector3Stamped& msg);
-  void publishBatteryState(const sensor_msgs::BatteryState& msg);
+  void publishGNSS(const sensor_msgs::msg::NavSatFix& msg);
+  void publishGNSSStatus(const mrs_msgs::msg::GpsInfo& msg);
+  void publishRTK(const mrs_msgs::msg::RtkGps& msg);
+  void publishOdometry(const nav_msgs::msg::Odometry& msg);
+  void publishGroundTruth(const nav_msgs::msg::Odometry& msg);
+  void publishIMU(const sensor_msgs::msg::Imu& msg);
+  void publishDistanceSensor(const sensor_msgs::msg::Range& msg);
+  void publishAltitude(const mrs_msgs::msg::HwApiAltitude& msg);
+  void publishMagnetometerHeading(const mrs_msgs::msg::Float64Stamped& msg);
+  void publishMagneticField(const sensor_msgs::msg::MagneticField& msg);
+  void publishStatus(const mrs_msgs::msg::HwApiStatus& msg);
+  void publishRcChannels(const mrs_msgs::msg::HwApiRcChannels& msg);
+  void publishOrientation(const geometry_msgs::msg::QuaternionStamped& msg);
+  void publishPosition(const geometry_msgs::msg::PointStamped& msg);
+  void publishVelocity(const geometry_msgs::msg::Vector3Stamped& msg);
+  void publishAngularVelocity(const geometry_msgs::msg::Vector3Stamped& msg);
+  void publishBatteryState(const sensor_msgs::msg::BatteryState& msg);
 
   // | ------------------------- timers ------------------------- |
 
-  ros::Timer timer_diagnostics_;
-  ros::Timer timer_mode_;
+  std::shared_ptr<mrs_lib::ROSTimer> timer_diagnostics_;
+  std::shared_ptr<mrs_lib::ROSTimer> timer_mode_;
 
-  void timerStatus(const ros::TimerEvent& event);
-  void timerMode(const ros::TimerEvent& event);
+  void timerStatus(void);
+  void timerMode(void);
 
   // | --------------------- service servers -------------------- |
 
-  ros::ServiceServer ss_arming_;
-  ros::ServiceServer ss_offboard_;
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr ss_arming_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr ss_offboard_;
 
-  bool callbackArming(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
-  bool callbackOffboard(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
+  bool callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, const std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+  bool callbackOffboard(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, const std::shared_ptr<std_srvs::srv::Trigger::Response> response);
 
   // | ----------------------- publishers ----------------------- |
 };
 
 //}
 
-/* onInit() //{ */
+/* HwApiManager::HwApiManager(rclcpp::NodeOptions options) //{ */
 
-void HwApiManager::onInit() {
+HwApiManager::HwApiManager(rclcpp::NodeOptions options) : rclcpp::Node("hw_api_manager", options) {
 
-  nh_ = nodelet::Nodelet::getMTPrivateNodeHandle();
+  RCLCPP_INFO(this->get_logger(), "constructor");
 
-  ros::Time::waitForValid();
+  timer_init_ = create_wall_timer(std::chrono::duration<double>(0.1s), std::bind(&HwApiManager::timerInit, this));
+}
+
+//}
+
+/* timerInit() //{ */
+
+void HwApiManager::timerInit() {
+
+  node_  = this->shared_from_this();
+  clock_ = node_->get_clock();
 
   // | ----------------------- load params ---------------------- |
 
-  mrs_lib::ParamLoader param_loader(nh_, "HwApiManager");
+  mrs_lib::ParamLoader param_loader(node_, this->get_name());
 
   param_loader.loadParam("version", _version_);
 
   if (_version_ != VERSION) {
 
-    ROS_ERROR("[HwApiManager]: the version of the binary (%s) does not match the config file (%s), please build me!", VERSION, _version_.c_str());
-    ros::shutdown();
+    RCLCPP_ERROR(node_->get_logger(), "the version of the binary (%s) does not match the config file (%s), please build me!", VERSION, _version_.c_str());
+    rclcpp::shutdown();
   }
 
   param_loader.loadParam("hw_interface_plugin", _plugin_address_);
@@ -213,10 +228,6 @@ void HwApiManager::onInit() {
   param_loader.loadParam("topic_prefix", _topic_prefix_);
   param_loader.loadParam("timers/diagnostics/rate", _timer_diagnostics_rate_);
   param_loader.loadParam("timers/mode/rate", _timer_mode_rate_);
-
-  param_loader.loadParam("publish_rate/status", _pub_status_rate_);
-  param_loader.loadParam("publish_rate/connected", _pub_connected_rate_);
-  param_loader.loadParam("publish_rate/capabilities", _pub_capabilities_rate_);
 
   param_loader.loadParam("publish_rate/gnss", _pub_gnss_rate_);
   param_loader.loadParam("publish_rate/gnss_status", _pub_gnss_status_rate_);
@@ -237,84 +248,250 @@ void HwApiManager::onInit() {
   param_loader.loadParam("publish_rate/ground_truth", _pub_ground_truth_rate_);
 
   if (!param_loader.loadedSuccessfully()) {
-    ROS_ERROR("[HwApiManager]: could not load all parameters!");
-    ros::shutdown();
+    RCLCPP_ERROR(node_->get_logger(), "could not load all parameters!");
+    rclcpp::shutdown();
   }
 
   // | --------------------- tf transformer --------------------- |
 
-  transformer_ = std::make_shared<mrs_lib::Transformer>(nh_, "HwApiManager");
+  transformer_ = std::make_shared<mrs_lib::Transformer>(node_);
   transformer_->setDefaultPrefix(_uav_name_);
   transformer_->retryLookupNewest(true);
 
   // | ----------------------- subscribers ---------------------- |
 
-  mrs_lib::SubscribeHandlerOptions shopts;
-  shopts.nh                 = nh_;
+  mrs_lib::SubscriberHandlerOptions shopts;
+
+  shopts.node               = node_;
   shopts.node_name          = "HwApiManager";
   shopts.no_message_timeout = mrs_lib::no_timeout;
   shopts.threadsafe         = true;
   shopts.autostart          = true;
-  shopts.queue_size         = 10;
-  shopts.transport_hints    = ros::TransportHints().tcpNoDelay();
 
-  sh_actuator_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiActuatorCmd>(shopts, "actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
+  sh_actuator_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiActuatorCmd>(shopts, "~/actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
 
-  sh_control_group_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiControlGroupCmd>(shopts, "control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
+  sh_control_group_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>(shopts, "~/control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
 
-  sh_attitude_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeCmd>(shopts, "attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
+  sh_attitude_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeCmd>(shopts, "~/attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
 
-  sh_attitude_rate_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAttitudeRateCmd>(shopts, "attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
+  sh_attitude_rate_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>(shopts, "~/attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
 
-  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgRateCmd>(shopts, "acceleration_hdg_rate_cmd",
-                                                                                                   &HwApiManager::callbackAccelerationHdgRateCmd, this);
+  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd>(shopts, "~/acceleration_hdg_rate_cmd",
+                                                                                                         &HwApiManager::callbackAccelerationHdgRateCmd, this);
 
   sh_acceleration_hdg_cmd_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::HwApiAccelerationHdgCmd>(shopts, "acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>(shopts, "~/acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
 
   sh_velocity_hdg_rate_cmd_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgRateCmd>(shopts, "velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>(shopts, "~/velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
 
-  sh_velocity_hdg_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiVelocityHdgCmd>(shopts, "velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
+  sh_velocity_hdg_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>(shopts, "~/velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
 
-  sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiPositionCmd>(shopts, "position_cmd", &HwApiManager::callbackPositionCmd, this);
+  sh_position_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
 
-  sh_tracker_cmd_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts, "/" + _uav_name_ + "/control_manager/tracker_cmd", &HwApiManager::callbackTrackerCmd, this);
+  sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(shopts, "/" + _uav_name_ + "/control_manager/tracker_cmd",
+                                                                              &HwApiManager::callbackTrackerCmd, this);
 
   // | ----------------------- publishers ----------------------- |
 
-  ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities", _pub_capabilities_rate_);
-  ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status", _pub_status_rate_);
-  ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected", _pub_connected_rate_);
 
-  ph_gnss_               = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss", 1, false, _pub_gnss_rate_);
-  ph_gnss_status_        = mrs_lib::PublisherHandler<mrs_msgs::GpsInfo>(nh_, "gnss_status", 1, false, _pub_gnss_status_rate_);
-  ph_rtk_                = mrs_lib::PublisherHandler<mrs_msgs::RtkGps>(nh_, "rtk", 1, false, _pub_rtk_rate_);
-  ph_distance_sensor_    = mrs_lib::PublisherHandler<sensor_msgs::Range>(nh_, "distance_sensor", 1, false, _pub_distance_sensor_rate_);
-  ph_mag_heading_        = mrs_lib::PublisherHandler<mrs_msgs::Float64Stamped>(nh_, "mag_heading", 1, false, _pub_mag_heading_rate_);
-  ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::MagneticField>(nh_, "magnetic_field", 1, false, _pub_mag_magnetic_field_rate_);
-  ph_altitude_           = mrs_lib::PublisherHandler<mrs_msgs::HwApiAltitude>(nh_, "altitude", 1, false, _pub_altitude_rate_);
-  ph_imu_                = mrs_lib::PublisherHandler<sensor_msgs::Imu>(nh_, "imu", 1, false, _pub_imu_rate_);
-  ph_rc_channels_        = mrs_lib::PublisherHandler<mrs_msgs::HwApiRcChannels>(nh_, "rc_channels", 1, false, _pub_rc_channels_rate_);
-  ph_battery_state_      = mrs_lib::PublisherHandler<sensor_msgs::BatteryState>(nh_, "battery_state", 1, false, _pub_battery_state_rate_);
+  {
+    mrs_lib::PublisherHandlerOptions opts;
 
-  ph_position_         = mrs_lib::PublisherHandler<geometry_msgs::PointStamped>(nh_, "position", 1, false, _pub_position_rate_);
-  ph_orientation_      = mrs_lib::PublisherHandler<geometry_msgs::QuaternionStamped>(nh_, "orientation", 1, false, _pub_orientation_rate_);
-  ph_velocity_         = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "velocity", 1, false, _pub_velocity_rate_);
-  ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::Vector3Stamped>(nh_, "angular_velocity", 1, false, _pub_angular_velocity_rate_);
-  ph_odometry_         = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "odometry", 1, false, _pub_odometry_rate_);
-  ph_ground_truth_     = mrs_lib::PublisherHandler<nav_msgs::Odometry>(nh_, "ground_truth", 1, false, _pub_ground_truth_rate_);
+    opts.node          = node_;
+
+    ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiCapabilities>(opts, "~/capabilities");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+
+    ph_status_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiStatus>(opts, "~/status");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+
+    ph_connected_ = mrs_lib::PublisherHandler<std_msgs::msg::Empty>(opts, "~/connected");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_gnss_rate_;
+
+    ph_gnss_ = mrs_lib::PublisherHandler<sensor_msgs::msg::NavSatFix>(opts, "~/gnss");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_gnss_rate_;
+
+    ph_gnss_status_ = mrs_lib::PublisherHandler<mrs_msgs::msg::GpsInfo>(opts, "~/gnss_status");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_rtk_rate_;
+
+    ph_rtk_ = mrs_lib::PublisherHandler<mrs_msgs::msg::RtkGps>(opts, "~/rtk");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_distance_sensor_rate_;
+
+    ph_distance_sensor_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Range>(opts, "~/distance_sensor");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_mag_heading_rate_;
+
+    ph_mag_heading_ = mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>(opts, "~/mag_heading");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_mag_magnetic_field_rate_;
+
+    ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField>(opts, "~/magnetic_field");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_altitude_rate_;
+
+    ph_altitude_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiAltitude>(opts, "~/altitude");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_imu_rate_;
+
+    ph_imu_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Imu>(opts, "~/imu");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_rc_channels_rate_;
+
+    ph_rc_channels_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcChannels>(opts, "~/rc_channels");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_battery_state_rate_;
+
+    ph_battery_state_ = mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>(opts, "~/battery_state");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_position_rate_;
+
+    ph_position_ = mrs_lib::PublisherHandler<geometry_msgs::msg::PointStamped>(opts, "~/position");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_orientation_rate_;
+
+    ph_orientation_ = mrs_lib::PublisherHandler<geometry_msgs::msg::QuaternionStamped>(opts, "~/orientation");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_velocity_rate_;
+
+    ph_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>(opts, "~/velocity");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_angular_velocity_rate_;
+
+    ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>(opts, "~/angular_velocity");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_odometry_rate_;
+
+    ph_odometry_ = mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>(opts, "~/odometry");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_ground_truth_rate_;
+
+    ph_ground_truth_ = mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>(opts, "~/ground_truth");
+  }
 
   // | --------------------- service servers -------------------- |
 
-  ss_arming_   = nh_.advertiseService("arming", &HwApiManager::callbackArming, this);
-  ss_offboard_ = nh_.advertiseService("offboard", &HwApiManager::callbackOffboard, this);
+  ss_arming_ =
+      node_->create_service<std_srvs::srv::SetBool>("~/arming", std::bind(&HwApiManager::callbackArming, this, std::placeholders::_1, std::placeholders::_2));
+
+  ss_offboard_ =
+      node_->create_service<std_srvs::srv::Trigger>("~/offboard", std::bind(&HwApiManager::callbackOffboard, this, std::placeholders::_1, std::placeholders::_2));
 
   // | ------------------------- timers ------------------------- |
 
-  timer_diagnostics_ = nh_.createTimer(ros::Rate(_timer_diagnostics_rate_), &HwApiManager::timerStatus, this);
-  timer_mode_        = nh_.createTimer(ros::Rate(_timer_mode_rate_), &HwApiManager::timerMode, this);
+  mrs_lib::TimerHandlerOptions opts;
+
+  opts.node      = node_;
+  opts.autostart = true;
+
+  {
+    std::function<void()> callback_fcn = std::bind(&HwApiManager::timerStatus, this);
+
+    timer_diagnostics_ = std::make_shared<mrs_lib::ROSTimer>(opts, rclcpp::Rate(_timer_diagnostics_rate_, clock_), callback_fcn);
+  }
+
+  {
+    std::function<void()> callback_fcn = std::bind(&HwApiManager::timerMode, this);
+
+    timer_mode_ = std::make_shared<mrs_lib::ROSTimer>(opts, rclcpp::Rate(_timer_mode_rate_, clock_), callback_fcn);
+  }
 
   // | ---------------- bind the common handlers ---------------- |
 
@@ -350,27 +527,29 @@ void HwApiManager::onInit() {
   plugin_loader_ = std::make_unique<pluginlib::ClassLoader<mrs_uav_hw_api::MrsUavHwApi>>("mrs_uav_hw_api", "mrs_uav_hw_api::MrsUavHwApi");
 
   try {
-    ROS_INFO("[HwApiManager]: loading the plugin '%s'", _plugin_address_.c_str());
-    hw_api_ = plugin_loader_->createInstance(_plugin_address_.c_str());
+    RCLCPP_INFO(node_->get_logger(), "loading the plugin '%s'", _plugin_address_.c_str());
+    hw_api_ = plugin_loader_->createSharedInstance(_plugin_address_.c_str());
   }
   catch (pluginlib::CreateClassException& ex1) {
-    ROS_ERROR("[HwApiManager]: CreateClassException for the plugin '%s'", _plugin_address_.c_str());
-    ROS_ERROR("[HwApiManager]: Error: %s", ex1.what());
-    ros::shutdown();
+    RCLCPP_ERROR(node_->get_logger(), "CreateClassException for the plugin '%s'", _plugin_address_.c_str());
+    RCLCPP_ERROR(node_->get_logger(), "Error: %s", ex1.what());
+    rclcpp::shutdown();
   }
   catch (pluginlib::PluginlibException& ex) {
-    ROS_ERROR("[HwApiManager]: PluginlibException for the plugin '%s'", _plugin_address_.c_str());
-    ROS_ERROR("[HwApiManager]: Error: %s", ex.what());
-    ros::shutdown();
+    RCLCPP_ERROR(node_->get_logger(), "PluginlibException for the plugin '%s'", _plugin_address_.c_str());
+    RCLCPP_ERROR(node_->get_logger(), "Error: %s", ex.what());
+    rclcpp::shutdown();
   }
 
   // | ------------------ initialize the plugin ----------------- |
 
-  hw_api_->initialize(nh_, common_handlers_);
+  hw_api_->initialize(node_->create_sub_node("plugin"), common_handlers_);
 
-  ROS_INFO("[HwApiManager]: initialized");
+  RCLCPP_INFO(get_logger(), "initialized");
 
   is_initialized_ = true;
+
+  timer_init_->cancel();
 }
 
 //}
@@ -379,7 +558,7 @@ void HwApiManager::onInit() {
 
 /* callbackActuatorCmd() //{ */
 
-void HwApiManager::callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPtr msg) {
+void HwApiManager::callbackActuatorCmd(const mrs_msgs::msg::HwApiActuatorCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -388,7 +567,7 @@ void HwApiManager::callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPt
   bool result = hw_api_->callbackActuatorCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'control group' command!");
   }
 }
 
@@ -396,7 +575,7 @@ void HwApiManager::callbackActuatorCmd(const mrs_msgs::HwApiActuatorCmd::ConstPt
 
 /* callbackControlGroupCmd() //{ */
 
-void HwApiManager::callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd::ConstPtr msg) {
+void HwApiManager::callbackControlGroupCmd(const mrs_msgs::msg::HwApiControlGroupCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -405,7 +584,7 @@ void HwApiManager::callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd:
   bool result = hw_api_->callbackControlGroupCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'control group' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'control group' command!");
   }
 }
 
@@ -413,7 +592,7 @@ void HwApiManager::callbackControlGroupCmd(const mrs_msgs::HwApiControlGroupCmd:
 
 /* callbackAttitudeRateCmd() //{ */
 
-void HwApiManager::callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd::ConstPtr msg) {
+void HwApiManager::callbackAttitudeRateCmd(const mrs_msgs::msg::HwApiAttitudeRateCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -422,7 +601,7 @@ void HwApiManager::callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd:
   bool result = hw_api_->callbackAttitudeRateCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'attitude rate' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'attitude rate' command!");
   }
 }
 
@@ -430,7 +609,7 @@ void HwApiManager::callbackAttitudeRateCmd(const mrs_msgs::HwApiAttitudeRateCmd:
 
 /* callbackAttitudeCmd() //{ */
 
-void HwApiManager::callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPtr msg) {
+void HwApiManager::callbackAttitudeCmd(const mrs_msgs::msg::HwApiAttitudeCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -439,7 +618,7 @@ void HwApiManager::callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPt
   bool result = hw_api_->callbackAttitudeCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'attitude' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'attitude' command!");
   }
 }
 
@@ -447,7 +626,7 @@ void HwApiManager::callbackAttitudeCmd(const mrs_msgs::HwApiAttitudeCmd::ConstPt
 
 /* callbackAccelerationHdgRateCmd() //{ */
 
-void HwApiManager::callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerationHdgRateCmd::ConstPtr msg) {
+void HwApiManager::callbackAccelerationHdgRateCmd(const mrs_msgs::msg::HwApiAccelerationHdgRateCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -456,7 +635,7 @@ void HwApiManager::callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerat
   bool result = hw_api_->callbackAccelerationHdgRateCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'acceleration+hdg rate' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'acceleration+hdg rate' command!");
   }
 }
 
@@ -464,7 +643,7 @@ void HwApiManager::callbackAccelerationHdgRateCmd(const mrs_msgs::HwApiAccelerat
 
 /* callbackAccelerationHdgCmd() //{ */
 
-void HwApiManager::callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationHdgCmd::ConstPtr msg) {
+void HwApiManager::callbackAccelerationHdgCmd(const mrs_msgs::msg::HwApiAccelerationHdgCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -473,7 +652,7 @@ void HwApiManager::callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationH
   bool result = hw_api_->callbackAccelerationHdgCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'acceleration+hdg' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'acceleration+hdg' command!");
   }
 }
 
@@ -481,7 +660,7 @@ void HwApiManager::callbackAccelerationHdgCmd(const mrs_msgs::HwApiAccelerationH
 
 /* callbackVelocityHdgRateCmd() //{ */
 
-void HwApiManager::callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRateCmd::ConstPtr msg) {
+void HwApiManager::callbackVelocityHdgRateCmd(const mrs_msgs::msg::HwApiVelocityHdgRateCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -490,7 +669,7 @@ void HwApiManager::callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRa
   bool result = hw_api_->callbackVelocityHdgRateCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'velocity+hdg rate' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'velocity+hdg rate' command!");
   }
 }
 
@@ -498,7 +677,7 @@ void HwApiManager::callbackVelocityHdgRateCmd(const mrs_msgs::HwApiVelocityHdgRa
 
 /* callbackVelocityHdgCmd() //{ */
 
-void HwApiManager::callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::ConstPtr msg) {
+void HwApiManager::callbackVelocityHdgCmd(const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -507,7 +686,7 @@ void HwApiManager::callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::C
   bool result = hw_api_->callbackVelocityHdgCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'velocity+hdg' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'velocity+hdg' command!");
   }
 }
 
@@ -515,7 +694,7 @@ void HwApiManager::callbackVelocityHdgCmd(const mrs_msgs::HwApiVelocityHdgCmd::C
 
 /* callbackPositionCmd() //{ */
 
-void HwApiManager::callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPtr msg) {
+void HwApiManager::callbackPositionCmd(const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -524,7 +703,7 @@ void HwApiManager::callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPt
   bool result = hw_api_->callbackPositionCmd(msg);
 
   if (!result) {
-    ROS_WARN_THROTTLE(1.0, "[HwApiManager]: the currently loaded HW API does not implement the 'position' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'position' command!");
   }
 }
 
@@ -532,7 +711,7 @@ void HwApiManager::callbackPositionCmd(const mrs_msgs::HwApiPositionCmd::ConstPt
 
 /* callbackTrackerCmd() //{ */
 
-void HwApiManager::callbackTrackerCmd(const mrs_msgs::TrackerCommand::ConstPtr msg) {
+void HwApiManager::callbackTrackerCmd(const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg) {
 
   if (!is_initialized_) {
     return;
@@ -547,18 +726,19 @@ void HwApiManager::callbackTrackerCmd(const mrs_msgs::TrackerCommand::ConstPtr m
 
 /* callbackArming() //{ */
 
-bool HwApiManager::callbackArming(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res) {
+bool HwApiManager::callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::Request>  request,
+                                  const std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
 
   if (!is_initialized_) {
     return false;
   }
 
-  ROS_INFO("[HwApiManager]: %s", req.data ? "arming" : "disarming");
+  RCLCPP_INFO(node_->get_logger(), "%s", request->data ? "arming" : "disarming");
 
-  auto [success, message] = hw_api_->callbackArming(req.data);
+  auto [success, message] = hw_api_->callbackArming(request->data);
 
-  res.success = success;
-  res.message = message;
+  response->success = success;
+  response->message = message;
 
   return true;
 }
@@ -567,18 +747,19 @@ bool HwApiManager::callbackArming(std_srvs::SetBool::Request& req, std_srvs::Set
 
 /* callbackOffboard() //{ */
 
-bool HwApiManager::callbackOffboard([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
+bool HwApiManager::callbackOffboard([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+                                    const std::shared_ptr<std_srvs::srv::Trigger::Response>                 response) {
 
   if (!is_initialized_) {
     return false;
   }
 
-  ROS_INFO("[HwApiManager]: switching to offboard");
+  RCLCPP_INFO(node_->get_logger(), "switching to offboard");
 
   auto [success, message] = hw_api_->callbackOffboard();
 
-  res.success = success;
-  res.message = message;
+  response->success = success;
+  response->message = message;
 
   return true;
 }
@@ -589,21 +770,21 @@ bool HwApiManager::callbackOffboard([[maybe_unused]] std_srvs::Trigger::Request&
 
 /* timerStatus() //{ */
 
-void HwApiManager::timerStatus([[maybe_unused]] const ros::TimerEvent& event) {
+void HwApiManager::timerStatus() {
 
   if (!is_initialized_) {
     return;
   }
 
-  ROS_INFO_ONCE("[HwApiManager]: timerStatus() spinning");
+  RCLCPP_INFO_ONCE(node_->get_logger(), "timerStatus() spinning");
 
-  mrs_msgs::HwApiStatus status = hw_api_->getStatus();
+  mrs_msgs::msg::HwApiStatus status = hw_api_->getStatus();
 
   ph_status_.publish(status);
 
   if (status.connected) {
 
-    std_msgs::Empty msg;
+    std_msgs::msg::Empty msg;
     ph_connected_.publish(msg);
   }
 }
@@ -612,15 +793,15 @@ void HwApiManager::timerStatus([[maybe_unused]] const ros::TimerEvent& event) {
 
 /* timerMode() //{ */
 
-void HwApiManager::timerMode([[maybe_unused]] const ros::TimerEvent& event) {
+void HwApiManager::timerMode() {
 
   if (!is_initialized_) {
     return;
   }
 
-  ROS_INFO_ONCE("[HwApiManager]: timerCapabilities() spinning");
+  RCLCPP_INFO_ONCE(node_->get_logger(), "timerCapabilities() spinning");
 
-  mrs_msgs::HwApiCapabilities diag = hw_api_->getCapabilities();
+  mrs_msgs::msg::HwApiCapabilities diag = hw_api_->getCapabilities();
 
   ph_capabilities_.publish(diag);
 }
@@ -660,7 +841,7 @@ std::string HwApiManager::getWorldFrameName(void) {
 
 /* publishGNSS() //{ */
 
-void HwApiManager::publishGNSS(const sensor_msgs::NavSatFix& msg) {
+void HwApiManager::publishGNSS(const sensor_msgs::msg::NavSatFix& msg) {
 
   if (!is_initialized_) {
     return;
@@ -673,7 +854,7 @@ void HwApiManager::publishGNSS(const sensor_msgs::NavSatFix& msg) {
 
 /* publishGNSSStatus() //{ */
 
-void HwApiManager::publishGNSSStatus(const mrs_msgs::GpsInfo& msg) {
+void HwApiManager::publishGNSSStatus(const mrs_msgs::msg::GpsInfo& msg) {
 
   if (!is_initialized_) {
     return;
@@ -686,7 +867,7 @@ void HwApiManager::publishGNSSStatus(const mrs_msgs::GpsInfo& msg) {
 
 /* publishRTK() //{ */
 
-void HwApiManager::publishRTK(const mrs_msgs::RtkGps& msg) {
+void HwApiManager::publishRTK(const mrs_msgs::msg::RtkGps& msg) {
 
   if (!is_initialized_) {
     return;
@@ -699,7 +880,7 @@ void HwApiManager::publishRTK(const mrs_msgs::RtkGps& msg) {
 
 /* publishIMU() //{ */
 
-void HwApiManager::publishIMU(const sensor_msgs::Imu& msg) {
+void HwApiManager::publishIMU(const sensor_msgs::msg::Imu& msg) {
 
   if (!is_initialized_) {
     return;
@@ -712,7 +893,7 @@ void HwApiManager::publishIMU(const sensor_msgs::Imu& msg) {
 
 /* publishDistanceSensor() //{ */
 
-void HwApiManager::publishDistanceSensor(const sensor_msgs::Range& msg) {
+void HwApiManager::publishDistanceSensor(const sensor_msgs::msg::Range& msg) {
 
   if (!is_initialized_) {
     return;
@@ -725,7 +906,7 @@ void HwApiManager::publishDistanceSensor(const sensor_msgs::Range& msg) {
 
 /* publishAltitude() //{ */
 
-void HwApiManager::publishAltitude(const mrs_msgs::HwApiAltitude& msg) {
+void HwApiManager::publishAltitude(const mrs_msgs::msg::HwApiAltitude& msg) {
 
   if (!is_initialized_) {
     return;
@@ -738,7 +919,7 @@ void HwApiManager::publishAltitude(const mrs_msgs::HwApiAltitude& msg) {
 
 /* publishMagnetometerHeading() //{ */
 
-void HwApiManager::publishMagnetometerHeading(const mrs_msgs::Float64Stamped& msg) {
+void HwApiManager::publishMagnetometerHeading(const mrs_msgs::msg::Float64Stamped& msg) {
 
   if (!is_initialized_) {
     return;
@@ -751,7 +932,7 @@ void HwApiManager::publishMagnetometerHeading(const mrs_msgs::Float64Stamped& ms
 
 /* publishMagneticField() //{ */
 
-void HwApiManager::publishMagneticField(const sensor_msgs::MagneticField& msg) {
+void HwApiManager::publishMagneticField(const sensor_msgs::msg::MagneticField& msg) {
 
   if (!is_initialized_) {
     return;
@@ -764,7 +945,7 @@ void HwApiManager::publishMagneticField(const sensor_msgs::MagneticField& msg) {
 
 /* publishStatus() //{ */
 
-void HwApiManager::publishStatus(const mrs_msgs::HwApiStatus& msg) {
+void HwApiManager::publishStatus(const mrs_msgs::msg::HwApiStatus& msg) {
 
   if (!is_initialized_) {
     return;
@@ -777,7 +958,7 @@ void HwApiManager::publishStatus(const mrs_msgs::HwApiStatus& msg) {
 
 /* publishRcChannels() //{ */
 
-void HwApiManager::publishRcChannels(const mrs_msgs::HwApiRcChannels& msg) {
+void HwApiManager::publishRcChannels(const mrs_msgs::msg::HwApiRcChannels& msg) {
 
   if (!is_initialized_) {
     return;
@@ -790,7 +971,7 @@ void HwApiManager::publishRcChannels(const mrs_msgs::HwApiRcChannels& msg) {
 
 /* publishPosition() //{ */
 
-void HwApiManager::publishPosition(const geometry_msgs::PointStamped& msg) {
+void HwApiManager::publishPosition(const geometry_msgs::msg::PointStamped& msg) {
 
   if (!is_initialized_) {
     return;
@@ -803,7 +984,7 @@ void HwApiManager::publishPosition(const geometry_msgs::PointStamped& msg) {
 
 /* publishOrientation() //{ */
 
-void HwApiManager::publishOrientation(const geometry_msgs::QuaternionStamped& msg) {
+void HwApiManager::publishOrientation(const geometry_msgs::msg::QuaternionStamped& msg) {
 
   if (!is_initialized_) {
     return;
@@ -816,7 +997,7 @@ void HwApiManager::publishOrientation(const geometry_msgs::QuaternionStamped& ms
 
 /* publishVelocity() //{ */
 
-void HwApiManager::publishVelocity(const geometry_msgs::Vector3Stamped& msg) {
+void HwApiManager::publishVelocity(const geometry_msgs::msg::Vector3Stamped& msg) {
 
   if (!is_initialized_) {
     return;
@@ -829,7 +1010,7 @@ void HwApiManager::publishVelocity(const geometry_msgs::Vector3Stamped& msg) {
 
 /* publishAngularVelocity() //{ */
 
-void HwApiManager::publishAngularVelocity(const geometry_msgs::Vector3Stamped& msg) {
+void HwApiManager::publishAngularVelocity(const geometry_msgs::msg::Vector3Stamped& msg) {
 
   if (!is_initialized_) {
     return;
@@ -842,7 +1023,7 @@ void HwApiManager::publishAngularVelocity(const geometry_msgs::Vector3Stamped& m
 
 /* publishOdometry() //{ */
 
-void HwApiManager::publishOdometry(const nav_msgs::Odometry& msg) {
+void HwApiManager::publishOdometry(const nav_msgs::msg::Odometry& msg) {
 
   if (!is_initialized_) {
     return;
@@ -855,7 +1036,7 @@ void HwApiManager::publishOdometry(const nav_msgs::Odometry& msg) {
 
 /* publishGroundTruth() //{ */
 
-void HwApiManager::publishGroundTruth(const nav_msgs::Odometry& msg) {
+void HwApiManager::publishGroundTruth(const nav_msgs::msg::Odometry& msg) {
 
   if (!is_initialized_) {
     return;
@@ -868,7 +1049,7 @@ void HwApiManager::publishGroundTruth(const nav_msgs::Odometry& msg) {
 
 /* publishBatteryState() //{ */
 
-void HwApiManager::publishBatteryState(const sensor_msgs::BatteryState& msg) {
+void HwApiManager::publishBatteryState(const sensor_msgs::msg::BatteryState& msg) {
 
   if (!is_initialized_) {
     return;
@@ -881,5 +1062,5 @@ void HwApiManager::publishBatteryState(const sensor_msgs::BatteryState& msg) {
 
 }  // namespace mrs_uav_hw_api
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mrs_uav_hw_api::HwApiManager, nodelet::Nodelet)
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(mrs_uav_hw_api::HwApiManager)
