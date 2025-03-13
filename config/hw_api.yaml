@@ -12,9 +12,6 @@ timers:
     rate: 1 # [Hz]
 
 publish_rate:
-  status: 1
-  connected: 1
-  capabilities: 1
   gnss: 50
   gnss_status: 10
   rtk: 50

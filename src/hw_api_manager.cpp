@@ -51,10 +51,6 @@ private:
   double _timer_diagnostics_rate_;
   double _timer_mode_rate_;
 
-  double _pub_status_rate_;
-  double _pub_connected_rate_;
-  double _pub_capabilities_rate_;
-
   double _pub_gnss_rate_;
   double _pub_gnss_status_rate_;
   double _pub_rtk_rate_;
@@ -214,10 +210,6 @@ void HwApiManager::onInit() {
   param_loader.loadParam("timers/diagnostics/rate", _timer_diagnostics_rate_);
   param_loader.loadParam("timers/mode/rate", _timer_mode_rate_);
 
-  param_loader.loadParam("publish_rate/status", _pub_status_rate_);
-  param_loader.loadParam("publish_rate/connected", _pub_connected_rate_);
-  param_loader.loadParam("publish_rate/capabilities", _pub_capabilities_rate_);
-
   param_loader.loadParam("publish_rate/gnss", _pub_gnss_rate_);
   param_loader.loadParam("publish_rate/gnss_status", _pub_gnss_status_rate_);
   param_loader.loadParam("publish_rate/rtk", _pub_rtk_rate_);
@@ -284,9 +276,9 @@ void HwApiManager::onInit() {
 
   // | ----------------------- publishers ----------------------- |
 
-  ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities", _pub_capabilities_rate_);
-  ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status", _pub_status_rate_);
-  ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected", _pub_connected_rate_);
+  ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::HwApiCapabilities>(nh_, "capabilities", 1);
+  ph_status_       = mrs_lib::PublisherHandler<mrs_msgs::HwApiStatus>(nh_, "status", 1);
+  ph_connected_    = mrs_lib::PublisherHandler<std_msgs::Empty>(nh_, "connected", 1);
 
   ph_gnss_               = mrs_lib::PublisherHandler<sensor_msgs::NavSatFix>(nh_, "gnss", 1, false, _pub_gnss_rate_);
   ph_gnss_status_        = mrs_lib::PublisherHandler<mrs_msgs::GpsInfo>(nh_, "gnss_status", 1, false, _pub_gnss_status_rate_);
