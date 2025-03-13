@@ -1,0 +1,4 @@
+<map id="mrs_uav_hw_api::CommonHandlers_t" name="mrs_uav_hw_api::CommonHandlers_t">
+<area shape="rect" id="node1" title="A structure with methods and variables provided to the HW API Plugin." alt="" coords="5,95,273,121"/>
+<area shape="rect" id="node2" href="$structmrs__uav__hw__api_1_1Publishers__t.html" title="A structure with publisher methods provided to the HW API Plugin. The plugin can call these methods a..." alt="" coords="30,5,249,32"/>
+</map>
