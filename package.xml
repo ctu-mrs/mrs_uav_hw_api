@@ -23,7 +23,7 @@
 
   <depend>pluginlib </depend>
 
-  <depend>eigen3</depend>
+  <depend>eigen</depend>
 
   <depend>mrs_lib</depend>
   <depend>mrs_msgs</depend>
