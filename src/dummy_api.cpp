@@ -76,7 +76,7 @@ void DummyApi::initialize(const rclcpp::Node::SharedPtr &node, std::shared_ptr<m
 
   // | ------------------- loading parameters ------------------- |
 
-  mrs_lib::ParamLoader param_loader(node_, "MrsUavHwApi");
+  mrs_lib::ParamLoader param_loader(node_, "DummyHwApi");
 
   if (!param_loader.loadedSuccessfully()) {
     RCLCPP_ERROR(node_->get_logger(), "Could not load all parameters!");

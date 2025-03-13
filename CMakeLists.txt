@@ -36,6 +36,7 @@ set(LIBRARIES
 
 include_directories(
   include
+  ${rclcpp_INCLUDE_DIRS}
   )
 
 # MrsUavHwApi_HwApiManager
@@ -67,18 +68,18 @@ pluginlib_export_plugin_description_file(mrs_uav_hw_api plugins.xml)
 ## |                           Install                          |
 ## --------------------------------------------------------------
 
+ament_export_libraries(
+  ${LIBRARIES}
+)
+
 install(
   TARGETS ${LIBRARIES}
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
   )
-
-install(
-  DIRECTORY include/
-  DESTINATION include
-)
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
@@ -88,14 +89,10 @@ install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
 
-ament_export_include_directories("include")
+ament_export_include_directories(include)
 
-ament_export_libraries(
-  ${LIBRARIES}
-)
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
-ament_export_targets(
-  export_${PROJECT_NAME}
-)
+ament_export_dependencies(${DEPENDENCIES})
 
 ament_package()
