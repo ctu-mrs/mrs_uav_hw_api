@@ -7,7 +7,7 @@ world_frame_name: "hw_api_world"
 
 timers:
   diagnostics:
-    rate: 100.0 # [Hz]
+    rate: 1.0 # [Hz]
   mode:
     rate: 1.0 # [Hz]
 
