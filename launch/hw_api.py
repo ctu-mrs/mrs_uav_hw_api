@@ -23,7 +23,7 @@ def generate_launch_description():
 
     pkg_name = "mrs_uav_hw_api"
 
-    pkg_share_path = get_package_share_directory(pkg_name)
+    this_pkg_path = get_package_share_directory(pkg_name)
     namespace='hw_api'
 
     # #{ custom_config
@@ -51,7 +51,15 @@ def generate_launch_description():
 
     # #} end of custom_config
 
+    # #{ env-based params
+
     uav_name=os.getenv('UAV_NAME', "uav1")
+
+    # #} end of env-based params
+
+    configs = [
+        this_pkg_path + '/config/hw_api.yaml',
+    ]
 
     ld.add_action(ComposableNodeContainer(
 
@@ -72,7 +80,7 @@ def generate_launch_description():
                 parameters=[
                     {"uav_name": uav_name},
                     {"topic_prefix": "/" + uav_name},
-                    pkg_share_path + "/config/hw_api.yaml",
+                    {'configs': configs},
                     {'custom_config': custom_config},
                 ],
             )

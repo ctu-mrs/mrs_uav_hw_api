@@ -213,6 +213,14 @@ void HwApiManager::timerInit() {
 
   mrs_lib::ParamLoader param_loader(node_, this->get_name());
 
+  std::vector<std::string> config_files;
+  param_loader.loadParam("configs", config_files);
+
+  for (auto config_file : config_files) {
+    RCLCPP_INFO(node_->get_logger(), "loading config file '%s'", config_file.c_str());
+    param_loader.addYamlFile(config_file);
+  }
+
   param_loader.loadParam("version", _version_);
 
   if (_version_ != VERSION) {
