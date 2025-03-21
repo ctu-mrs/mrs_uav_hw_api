@@ -10,6 +10,14 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+if(MRS_ENABLE_TESTING)
+  message(WARNING "Setting optimizaton levels for tests")
+  add_definitions("-O0")
+  add_definitions("-g")
+else()
+  add_definitions("-O2")
+endif()
+
 set(DEPENDENCIES
   ament_cmake
   ament_cmake_ros
@@ -25,21 +33,22 @@ set(DEPENDENCIES
   Eigen3
 )
 
-foreach(DEP IN LISTS DEPENDENCIES)
-  find_package(${DEP} REQUIRED)
-endforeach()
-
 set(LIBRARIES
   MrsUavHwApi_HwApiManager
   MrsUavHwApi_DummyApi
   )
 
+foreach(DEP IN LISTS DEPENDENCIES)
+  find_package(${DEP} REQUIRED)
+endforeach()
+
 include_directories(
   include
   ${rclcpp_INCLUDE_DIRS}
+  ${mrs_lib_INCLUDE_DIRS}
   )
 
-# MrsUavHwApi_HwApiManager
+# Hw API manager
 
 add_library(MrsUavHwApi_HwApiManager SHARED
   src/hw_api_manager.cpp
@@ -51,7 +60,7 @@ ament_target_dependencies(MrsUavHwApi_HwApiManager
 
 rclcpp_components_register_nodes(MrsUavHwApi_HwApiManager PLUGIN "mrs_uav_hw_api::HwApiManager" EXECUTABLE MrsUavHwApi_HwApiManager)
 
-# MrsUavHwApi_DummyApi
+# Dummy API
 
 add_library(MrsUavHwApi_DummyApi SHARED
   src/dummy_api.cpp
@@ -60,6 +69,10 @@ add_library(MrsUavHwApi_DummyApi SHARED
 ament_target_dependencies(MrsUavHwApi_DummyApi
   ${DEPENDENCIES}
 )
+
+## --------------------------------------------------------------
+## |                       Export plugins                       |
+## --------------------------------------------------------------
 
 # <package of the base class>, <relative path to the xml>
 pluginlib_export_plugin_description_file(mrs_uav_hw_api plugins.xml)
