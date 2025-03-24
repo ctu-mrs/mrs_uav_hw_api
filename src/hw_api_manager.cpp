@@ -36,6 +36,16 @@ using namespace std::chrono_literals;
 
 //}
 
+/* typedefs //{ */
+
+#if USE_ROS_TIMER == 1
+typedef mrs_lib::ROSTimer TimerType;
+#else
+typedef mrs_lib::ThreadTimer TimerType;
+#endif
+
+//}
+
 namespace mrs_uav_hw_api
 {
 
@@ -172,8 +182,8 @@ private:
 
   // | ------------------------- timers ------------------------- |
 
-  std::shared_ptr<mrs_lib::ROSTimer> timer_diagnostics_;
-  std::shared_ptr<mrs_lib::ROSTimer> timer_mode_;
+  std::shared_ptr<TimerType> timer_diagnostics_;
+  std::shared_ptr<TimerType> timer_mode_;
 
   void timerStatus(void);
   void timerMode(void);
@@ -309,7 +319,7 @@ void HwApiManager::timerInit() {
   {
     mrs_lib::PublisherHandlerOptions opts;
 
-    opts.node          = node_;
+    opts.node = node_;
 
     ph_capabilities_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiCapabilities>(opts, "~/capabilities");
   }
@@ -317,7 +327,7 @@ void HwApiManager::timerInit() {
   {
     mrs_lib::PublisherHandlerOptions opts;
 
-    opts.node          = node_;
+    opts.node = node_;
 
     ph_status_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiStatus>(opts, "~/status");
   }
@@ -325,7 +335,7 @@ void HwApiManager::timerInit() {
   {
     mrs_lib::PublisherHandlerOptions opts;
 
-    opts.node          = node_;
+    opts.node = node_;
 
     ph_connected_ = mrs_lib::PublisherHandler<std_msgs::msg::Empty>(opts, "~/connected");
   }
@@ -479,8 +489,8 @@ void HwApiManager::timerInit() {
   ss_arming_ =
       node_->create_service<std_srvs::srv::SetBool>("~/arming", std::bind(&HwApiManager::callbackArming, this, std::placeholders::_1, std::placeholders::_2));
 
-  ss_offboard_ =
-      node_->create_service<std_srvs::srv::Trigger>("~/offboard", std::bind(&HwApiManager::callbackOffboard, this, std::placeholders::_1, std::placeholders::_2));
+  ss_offboard_ = node_->create_service<std_srvs::srv::Trigger>("~/offboard",
+                                                               std::bind(&HwApiManager::callbackOffboard, this, std::placeholders::_1, std::placeholders::_2));
 
   // | ------------------------- timers ------------------------- |
 
@@ -492,13 +502,13 @@ void HwApiManager::timerInit() {
   {
     std::function<void()> callback_fcn = std::bind(&HwApiManager::timerStatus, this);
 
-    timer_diagnostics_ = std::make_shared<mrs_lib::ROSTimer>(opts, rclcpp::Rate(_timer_diagnostics_rate_, clock_), callback_fcn);
+    timer_diagnostics_ = std::make_shared<TimerType>(opts, rclcpp::Rate(_timer_diagnostics_rate_, clock_), callback_fcn);
   }
 
   {
     std::function<void()> callback_fcn = std::bind(&HwApiManager::timerMode, this);
 
-    timer_mode_ = std::make_shared<mrs_lib::ROSTimer>(opts, rclcpp::Rate(_timer_mode_rate_, clock_), callback_fcn);
+    timer_mode_ = std::make_shared<TimerType>(opts, rclcpp::Rate(_timer_mode_rate_, clock_), callback_fcn);
   }
 
   // | ---------------- bind the common handlers ---------------- |

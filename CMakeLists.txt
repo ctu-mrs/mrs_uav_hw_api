@@ -3,7 +3,14 @@ project(mrs_uav_hw_api)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# 1 == use rclcpp::Timer implementation
+# 0 == use MRS's thread timer implementation
+set(USE_ROS_TIMER 0)
+
+if(${USE_ROS_TIMER})
+  MESSAGE(WARNING "[mrs_uav_managers]: Compiling with ROS Timers. This can cause high CPU load in runtime.")
+endif()
 
 # set the compile options to show code warnings
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -14,8 +21,6 @@ if(MRS_ENABLE_TESTING)
   message(WARNING "Setting optimizaton levels for tests")
   add_definitions("-O0")
   add_definitions("-g")
-else()
-  add_definitions("-O2")
 endif()
 
 set(DEPENDENCIES
@@ -60,6 +65,8 @@ ament_target_dependencies(MrsUavHwApi_HwApiManager
 
 rclcpp_components_register_nodes(MrsUavHwApi_HwApiManager PLUGIN "mrs_uav_hw_api::HwApiManager" EXECUTABLE MrsUavHwApi_HwApiManager)
 
+target_compile_definitions(MrsUavHwApi_HwApiManager PRIVATE USE_ROS_TIMER=${USE_ROS_TIMER})
+
 # Dummy API
 
 add_library(MrsUavHwApi_DummyApi SHARED
@@ -69,6 +76,8 @@ add_library(MrsUavHwApi_DummyApi SHARED
 ament_target_dependencies(MrsUavHwApi_DummyApi
   ${DEPENDENCIES}
 )
+
+target_compile_definitions(MrsUavHwApi_DummyApi PRIVATE USE_ROS_TIMER=${USE_ROS_TIMER})
 
 ## --------------------------------------------------------------
 ## |                       Export plugins                       |
