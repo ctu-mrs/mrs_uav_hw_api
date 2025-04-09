@@ -94,6 +94,10 @@ private:
   std::string _world_frame_name_;
   std::string _topic_prefix_;
 
+  // | ---------------------- param loader ---------------------- |
+
+  std::shared_ptr<mrs_lib::ParamLoader> param_loader_;
+
   // | ----------------------- transformer ---------------------- |
 
   std::shared_ptr<mrs_lib::Transformer> transformer_;
@@ -221,17 +225,17 @@ void HwApiManager::timerInit() {
 
   // | ----------------------- load params ---------------------- |
 
-  mrs_lib::ParamLoader param_loader(node_, this->get_name());
+  param_loader_ = std::make_shared<mrs_lib::ParamLoader>(node_, this->get_name());
 
   std::vector<std::string> config_files;
-  param_loader.loadParam("configs", config_files);
+  param_loader_->loadParam("configs", config_files);
 
   for (auto config_file : config_files) {
     RCLCPP_INFO(node_->get_logger(), "loading config file '%s'", config_file.c_str());
-    param_loader.addYamlFile(config_file);
+    param_loader_->addYamlFile(config_file);
   }
 
-  param_loader.loadParam("version", _version_);
+  param_loader_->loadParam("version", _version_);
 
   if (_version_ != VERSION) {
 
@@ -239,33 +243,33 @@ void HwApiManager::timerInit() {
     rclcpp::shutdown();
   }
 
-  param_loader.loadParam("hw_interface_plugin", _plugin_address_);
-  param_loader.loadParam("uav_name", _uav_name_);
-  param_loader.loadParam("body_frame_name", _body_frame_name_);
-  param_loader.loadParam("world_frame_name", _world_frame_name_);
-  param_loader.loadParam("topic_prefix", _topic_prefix_);
-  param_loader.loadParam("timers/diagnostics/rate", _timer_diagnostics_rate_);
-  param_loader.loadParam("timers/mode/rate", _timer_mode_rate_);
+  param_loader_->loadParam("hw_interface_plugin", _plugin_address_);
+  param_loader_->loadParam("uav_name", _uav_name_);
+  param_loader_->loadParam("body_frame_name", _body_frame_name_);
+  param_loader_->loadParam("world_frame_name", _world_frame_name_);
+  param_loader_->loadParam("topic_prefix", _topic_prefix_);
+  param_loader_->loadParam("timers/diagnostics/rate", _timer_diagnostics_rate_);
+  param_loader_->loadParam("timers/mode/rate", _timer_mode_rate_);
 
-  param_loader.loadParam("publish_rate/gnss", _pub_gnss_rate_);
-  param_loader.loadParam("publish_rate/gnss_status", _pub_gnss_status_rate_);
-  param_loader.loadParam("publish_rate/rtk", _pub_rtk_rate_);
-  param_loader.loadParam("publish_rate/imu", _pub_imu_rate_);
-  param_loader.loadParam("publish_rate/distance_sensor", _pub_distance_sensor_rate_);
-  param_loader.loadParam("publish_rate/altitude", _pub_altitude_rate_);
-  param_loader.loadParam("publish_rate/mag_heading", _pub_mag_heading_rate_);
-  param_loader.loadParam("publish_rate/mag_magnetic_field", _pub_mag_magnetic_field_rate_);
-  param_loader.loadParam("publish_rate/rc_channels", _pub_rc_channels_rate_);
-  param_loader.loadParam("publish_rate/battery_state", _pub_battery_state_rate_);
+  param_loader_->loadParam("publish_rate/gnss", _pub_gnss_rate_);
+  param_loader_->loadParam("publish_rate/gnss_status", _pub_gnss_status_rate_);
+  param_loader_->loadParam("publish_rate/rtk", _pub_rtk_rate_);
+  param_loader_->loadParam("publish_rate/imu", _pub_imu_rate_);
+  param_loader_->loadParam("publish_rate/distance_sensor", _pub_distance_sensor_rate_);
+  param_loader_->loadParam("publish_rate/altitude", _pub_altitude_rate_);
+  param_loader_->loadParam("publish_rate/mag_heading", _pub_mag_heading_rate_);
+  param_loader_->loadParam("publish_rate/mag_magnetic_field", _pub_mag_magnetic_field_rate_);
+  param_loader_->loadParam("publish_rate/rc_channels", _pub_rc_channels_rate_);
+  param_loader_->loadParam("publish_rate/battery_state", _pub_battery_state_rate_);
 
-  param_loader.loadParam("publish_rate/position", _pub_position_rate_);
-  param_loader.loadParam("publish_rate/velocity", _pub_velocity_rate_);
-  param_loader.loadParam("publish_rate/orientation", _pub_orientation_rate_);
-  param_loader.loadParam("publish_rate/angular_velocity", _pub_angular_velocity_rate_);
-  param_loader.loadParam("publish_rate/odometry", _pub_odometry_rate_);
-  param_loader.loadParam("publish_rate/ground_truth", _pub_ground_truth_rate_);
+  param_loader_->loadParam("publish_rate/position", _pub_position_rate_);
+  param_loader_->loadParam("publish_rate/velocity", _pub_velocity_rate_);
+  param_loader_->loadParam("publish_rate/orientation", _pub_orientation_rate_);
+  param_loader_->loadParam("publish_rate/angular_velocity", _pub_angular_velocity_rate_);
+  param_loader_->loadParam("publish_rate/odometry", _pub_odometry_rate_);
+  param_loader_->loadParam("publish_rate/ground_truth", _pub_ground_truth_rate_);
 
-  if (!param_loader.loadedSuccessfully()) {
+  if (!param_loader_->loadedSuccessfully()) {
     RCLCPP_ERROR(node_->get_logger(), "could not load all parameters!");
     rclcpp::shutdown();
   }
@@ -514,6 +518,8 @@ void HwApiManager::timerInit() {
   // | ---------------- bind the common handlers ---------------- |
 
   common_handlers_ = std::make_shared<mrs_uav_hw_api::CommonHandlers_t>();
+
+  common_handlers_->main_param_loader = param_loader_;
 
   common_handlers_->transformer = transformer_;
 

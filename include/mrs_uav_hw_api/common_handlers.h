@@ -1,8 +1,8 @@
-#ifndef COMMON_HANDLERS_H
-#define COMMON_HANDLERS_H
+#pragma once
 
 #include <mrs_uav_hw_api/publishers.h>
 #include <mrs_lib/transformer.h>
+#include <mrs_lib/param_loader.h>
 
 namespace mrs_uav_hw_api
 {
@@ -28,6 +28,8 @@ struct CommonHandlers_t
    */
   std::shared_ptr<mrs_lib::Transformer> transformer;
 
+  std::shared_ptr<mrs_lib::ParamLoader> main_param_loader;
+
   /**
    * @brief Method for obtaining the current "UAV_NAME" (the one set from the $UAV_NAME env variable).
    */
@@ -46,5 +48,3 @@ struct CommonHandlers_t
 };
 
 }  // namespace mrs_uav_hw_api
-
-#endif  // COMMON_HANDLERS_H
