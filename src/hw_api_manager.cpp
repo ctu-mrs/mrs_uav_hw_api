@@ -64,6 +64,7 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_init_;
   void                         timerInit();
+  void                         shutdown();
 
   // | ----------------------- parameters ----------------------- |
 
@@ -223,6 +224,8 @@ void HwApiManager::timerInit() {
   node_  = this->shared_from_this();
   clock_ = node_->get_clock();
 
+  rclcpp::on_shutdown([this]() { this->shutdown(); });
+
   // | ----------------------- load params ---------------------- |
 
   param_loader_ = std::make_shared<mrs_lib::ParamLoader>(node_, this->get_name());
@@ -292,30 +295,23 @@ void HwApiManager::timerInit() {
 
   sh_actuator_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiActuatorCmd>(shopts, "~/actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
 
-  sh_control_group_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>(shopts, "~/control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
+  sh_control_group_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>(shopts, "~/control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
 
   sh_attitude_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeCmd>(shopts, "~/attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
 
-  sh_attitude_rate_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>(shopts, "~/attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
+  sh_attitude_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>(shopts, "~/attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
 
-  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd>(shopts, "~/acceleration_hdg_rate_cmd",
-                                                                                                         &HwApiManager::callbackAccelerationHdgRateCmd, this);
+  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd>(shopts, "~/acceleration_hdg_rate_cmd", &HwApiManager::callbackAccelerationHdgRateCmd, this);
 
-  sh_acceleration_hdg_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>(shopts, "~/acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
+  sh_acceleration_hdg_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>(shopts, "~/acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
 
-  sh_velocity_hdg_rate_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>(shopts, "~/velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
+  sh_velocity_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>(shopts, "~/velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
 
-  sh_velocity_hdg_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>(shopts, "~/velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
+  sh_velocity_hdg_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>(shopts, "~/velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
 
   sh_position_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
 
-  sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(shopts, "/" + _uav_name_ + "/control_manager/tracker_cmd",
-                                                                              &HwApiManager::callbackTrackerCmd, this);
+  sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(shopts, "/" + _uav_name_ + "/control_manager/tracker_cmd", &HwApiManager::callbackTrackerCmd, this);
 
   // | ----------------------- publishers ----------------------- |
 
@@ -490,11 +486,9 @@ void HwApiManager::timerInit() {
 
   // | --------------------- service servers -------------------- |
 
-  ss_arming_ =
-      node_->create_service<std_srvs::srv::SetBool>("~/arming", std::bind(&HwApiManager::callbackArming, this, std::placeholders::_1, std::placeholders::_2));
+  ss_arming_ = node_->create_service<std_srvs::srv::SetBool>("~/arming", std::bind(&HwApiManager::callbackArming, this, std::placeholders::_1, std::placeholders::_2));
 
-  ss_offboard_ = node_->create_service<std_srvs::srv::Trigger>("~/offboard",
-                                                               std::bind(&HwApiManager::callbackOffboard, this, std::placeholders::_1, std::placeholders::_2));
+  ss_offboard_ = node_->create_service<std_srvs::srv::Trigger>("~/offboard", std::bind(&HwApiManager::callbackOffboard, this, std::placeholders::_1, std::placeholders::_2));
 
   // | ------------------------- timers ------------------------- |
 
@@ -574,6 +568,15 @@ void HwApiManager::timerInit() {
   is_initialized_ = true;
 
   timer_init_->cancel();
+}
+
+//}
+
+/* shutdown() //{ */
+
+void HwApiManager::shutdown() {
+
+  hw_api_.reset();
 }
 
 //}
@@ -750,8 +753,7 @@ void HwApiManager::callbackTrackerCmd(const mrs_msgs::msg::TrackerCommand::Const
 
 /* callbackArming() //{ */
 
-bool HwApiManager::callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::Request>  request,
-                                  const std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
+bool HwApiManager::callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, const std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
 
   if (!is_initialized_) {
     return false;
@@ -771,8 +773,7 @@ bool HwApiManager::callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::
 
 /* callbackOffboard() //{ */
 
-bool HwApiManager::callbackOffboard([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
-                                    const std::shared_ptr<std_srvs::srv::Trigger::Response>                 response) {
+bool HwApiManager::callbackOffboard([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> request, const std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
 
   if (!is_initialized_) {
     return false;

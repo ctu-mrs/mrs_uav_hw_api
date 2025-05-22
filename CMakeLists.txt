@@ -37,6 +37,7 @@ set(DEPENDENCIES
   std_msgs
   sensor_msgs
   Eigen3
+  mrs_uav_testing
 )
 
 set(LIBRARIES
@@ -52,6 +53,7 @@ include_directories(
   include
   ${rclcpp_INCLUDE_DIRS}
   ${mrs_lib_INCLUDE_DIRS}
+  ${mrs_uav_testing_INCLUDE_DIRS}
   )
 
 # Hw API manager
@@ -86,6 +88,17 @@ target_compile_definitions(MrsUavHwApi_DummyApi PRIVATE USE_ROS_TIMER=${USE_ROS_
 
 # <package of the base class>, <relative path to the xml>
 pluginlib_export_plugin_description_file(mrs_uav_hw_api plugins.xml)
+
+## --------------------------------------------------------------
+## |                           testing                          |
+## --------------------------------------------------------------
+
+# BUILD_TESTING is true by default when building with colcon
+if(BUILD_TESTING)
+
+  add_subdirectory(test)
+
+endif()
 
 ## --------------------------------------------------------------
 ## |                           Install                          |
