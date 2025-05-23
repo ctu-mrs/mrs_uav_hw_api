@@ -24,6 +24,12 @@ if(MRS_ENABLE_TESTING)
   add_definitions("-g")
 endif()
 
+if(COVERAGE)
+  message(WARNING "building with --coverage, the performance might be limited")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs")
+endif()
+
 set(DEPENDENCIES
   ament_cmake
   ament_cmake_ros
