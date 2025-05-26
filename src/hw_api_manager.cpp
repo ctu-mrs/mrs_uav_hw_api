@@ -576,6 +576,11 @@ void HwApiManager::timerInit() {
 
 void HwApiManager::shutdown() {
 
+  timer_diagnostics_->stop();
+  timer_mode_->stop();
+
+  hw_api_->destroy();
+
   hw_api_.reset();
 }
 

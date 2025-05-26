@@ -26,6 +26,8 @@ public:
 
   void initialize(const rclcpp::Node::SharedPtr &node, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers);
 
+  void destroy();
+
   // | --------------------- status methods --------------------- |
 
   mrs_msgs::msg::HwApiStatus       getStatus();
@@ -88,6 +90,13 @@ void DummyApi::initialize(const rclcpp::Node::SharedPtr &node, std::shared_ptr<m
   RCLCPP_INFO(node_->get_logger(), "dummy HW API initialized");
 
   is_initialized_ = true;
+}
+
+//}
+
+/* destroy() //{ */
+
+void DummyApi::destroy() {
 }
 
 //}

@@ -41,6 +41,8 @@ public:
    */
   virtual void initialize(const rclcpp::Node::SharedPtr& node, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) = 0;
 
+  virtual void destroy() = 0;
+
   /**
    * @brief Method for acquiring the HW API plugin's status. This method will be called repeatedly to obtain the status, which will be publisher by the plugin
    * manager.
