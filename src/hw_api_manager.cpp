@@ -576,12 +576,20 @@ void HwApiManager::timerInit() {
 
 void HwApiManager::shutdown() {
 
+  std::cout << "HwApiManager: shutdown(): called" << std::endl;
+
   timer_diagnostics_->stop();
   timer_mode_->stop();
 
+  std::cout << "HwApiManager: calling destroy() on hw api plugin" << std::endl;
+
   hw_api_->destroy();
 
+  std::cout << "HwApiManager: unloading hw api plugin" << std::endl;
+
   hw_api_.reset();
+
+  std::cout << "HwApiManager: finished shutdown()" << std::endl;
 }
 
 //}
