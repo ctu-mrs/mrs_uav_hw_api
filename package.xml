@@ -20,6 +20,7 @@
   <depend>launch</depend>
   <depend>launch_ros</depend>
   <depend>builtin_interfaces</depend>
+  <depend>backward_ros</depend>
 
   <depend>pluginlib </depend>
 

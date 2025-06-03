@@ -8,11 +8,12 @@ ament_target_dependencies(test_${TEST_NAME}
   rclcpp
   mrs_lib
   mrs_msgs
+  backward_ros
   )
 
 target_link_libraries(test_${TEST_NAME}
-    MrsUavHwApi_HwApiManager
-    MrsUavHwApi_DummyApi
+  MrsUavHwApi_HwApiManager
+  MrsUavHwApi_DummyApi
   )
 
 install(TARGETS

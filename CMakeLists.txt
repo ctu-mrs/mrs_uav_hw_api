@@ -44,6 +44,7 @@ set(DEPENDENCIES
   sensor_msgs
   Eigen3
   mrs_uav_testing
+  backward_ros
 )
 
 set(LIBRARIES

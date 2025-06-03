@@ -18,7 +18,7 @@ from std_msgs.msg import Bool
 
 def generate_test_description():
 
-    SetEnvironmentVariable('RMW_IMPLEMENTATION', 'rmw_zenoh_cpp')
+    SetEnvironmentVariable('RMW_IMPLEMENTATION', 'rmw_fastrtps_cpp')
 
     ld = launch.LaunchDescription()
 
@@ -26,15 +26,6 @@ def generate_test_description():
     launch_dir = os.path.dirname(launch_file_path)
 
     test_name = os.path.basename(launch_dir)
-
-    ld.add_action(
-            launch_ros.actions.Node(
-                package='rmw_zenoh_cpp',
-                namespace='',
-                executable='rmw_zenohd',
-                name='zenoh_router',
-            )
-        )
 
     ld.add_action(
         GroupAction([
@@ -59,6 +50,10 @@ def generate_test_description():
                 namespace='',
                 executable='test_'+test_name,
                 name='test_'+test_name,
+                output="screen",
+                parameters=[
+                        {'test_name': test_name},
+                ],
             )
         )
 
@@ -70,7 +65,8 @@ def generate_test_description():
 
     return ld
 
-# Active tests
+# #{ class PublisherHandlerTest(unittest.TestCase)
+
 class PublisherHandlerTest(unittest.TestCase):
 
     @classmethod
@@ -87,7 +83,7 @@ class PublisherHandlerTest(unittest.TestCase):
     def tearDown(self):
         self.node.destroy_node()
 
-    def test_interactor(self, proc_output, timeout=60):
+    def test_interactor(self, proc_output, timeout=120):
 
         """Check whether pose messages published"""
 
@@ -107,6 +103,8 @@ class PublisherHandlerTest(unittest.TestCase):
 
                 rclpy.spin_once(self.node, timeout_sec=1)
 
+            time.sleep(2.0)
+
             # check if we have the result
             self.assertTrue(len(test_result) > 0)
 
@@ -116,9 +114,14 @@ class PublisherHandlerTest(unittest.TestCase):
         finally:
             self.node.destroy_subscription(sub)
 
-# Post-shutdown tests
+# #} end of 
+
+# #{ Post-shutdown tests
+
 @launch_testing.post_shutdown_test()
 class PublisherHandlerTestShutdown(unittest.TestCase):
     def test_exit_codes(self, proc_info):
         """Check if the processes exited normally."""
         launch_testing.asserts.assertExitCodes(proc_info)
+
+# #} end of Post-shutdown tests
