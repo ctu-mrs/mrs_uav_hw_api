@@ -20,7 +20,7 @@ endif()
 
 if(MRS_ENABLE_TESTING)
   message(WARNING "Setting optimizaton levels for tests")
-  add_definitions("-O0")
+  add_definitions("-O1")
   add_definitions("-g")
 endif()
 
