@@ -53,7 +53,17 @@ def generate_launch_description():
 
     # #{ env-based params
 
-    uav_name=os.getenv('UAV_NAME', "uav1")
+    # #{ uav_name
+
+    uav_name = LaunchConfiguration('uav_name')
+
+    ld.add_action(DeclareLaunchArgument(
+        'uav_name',
+        default_value=os.getenv('UAV_NAME', "uav1"),
+        description="The uav name used for namespacing.",
+    ))
+
+    # #} end of custom_config
 
     # #} end of env-based params
 
@@ -79,7 +89,7 @@ def generate_launch_description():
                 name='hw_api',
                 parameters=[
                     {"uav_name": uav_name},
-                    {"topic_prefix": "/" + uav_name},
+                    {"topic_prefix": ["/", uav_name]},
                     {'configs': configs},
                     {'custom_config': custom_config},
                 ],
