@@ -9,6 +9,8 @@ while [ ! -e "build/COLCON_IGNORE" ]; do
   fi
 done
 
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
 colcon test-result --delete-yes
 
 colcon test --packages-select mrs_uav_hw_api --ctest-args -R 'load_dummy' --event-handlers console_direct+
