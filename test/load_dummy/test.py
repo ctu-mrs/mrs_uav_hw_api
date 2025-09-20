@@ -34,7 +34,7 @@ def generate_test_description():
                     PathJoinSubstitution([
                         FindPackageShare('mrs_multirotor_simulator'),
                             'launch',
-                            'hw_api.py'
+                            'hw_api.launch.py'
                         ])
                     ]),
                 )
