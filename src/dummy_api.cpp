@@ -10,7 +10,6 @@
 #include <mrs_lib/attitude_converter.h>
 #include <mrs_lib/mutex.h>
 #include <mrs_lib/publisher_handler.h>
-#include <mrs_lib/subscriber_handler.h>
 
 //}
 
