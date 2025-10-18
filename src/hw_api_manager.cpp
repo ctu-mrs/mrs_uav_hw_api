@@ -235,7 +235,7 @@ void HwApiManager::initialize() {
 
   // | ----------------------- load params ---------------------- |
 
-  param_loader_ = std::make_shared<mrs_lib::ParamLoader>(node_, node_->get_name());
+  param_loader_ = std::make_shared<mrs_lib::ParamLoader>(node_);
 
   std::vector<std::string> config_files;
   param_loader_->loadParam("configs", config_files);
