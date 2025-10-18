@@ -59,6 +59,7 @@ public:
   HwApiManager(rclcpp::NodeOptions options);
 
 private:
+  rclcpp::Node::SharedPtr  node_;
   rclcpp::Clock::SharedPtr clock_;
   std::string              _version_;
   std::atomic<bool>        is_initialized_ = false;
@@ -223,6 +224,7 @@ HwApiManager::HwApiManager(rclcpp::NodeOptions options) : mrs_lib::Node("hw_api_
 
 void HwApiManager::initialize() {
 
+  node_  = this_node_ptr();
   clock_ = node_->get_clock();
 
   cbkgrp_subs_   = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
