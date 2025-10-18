@@ -4,6 +4,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <mrs_lib/node.h>
 #include <mrs_lib/param_loader.h>
 #include <mrs_lib/subscriber_handler.h>
 #include <mrs_lib/transformer.h>
@@ -52,13 +53,12 @@ namespace mrs_uav_hw_api
 
 /* class HwApiManager //{ */
 
-class HwApiManager : public rclcpp::Node {
+class HwApiManager : public mrs_lib::Node {
 
 public:
   HwApiManager(rclcpp::NodeOptions options);
 
 private:
-  rclcpp::Node::SharedPtr  node_;
   rclcpp::Clock::SharedPtr clock_;
   std::string              _version_;
   std::atomic<bool>        is_initialized_ = false;
@@ -67,9 +67,8 @@ private:
   rclcpp::CallbackGroup::SharedPtr cbkgrp_ss_;
   rclcpp::CallbackGroup::SharedPtr cbkgrp_timers_;
 
-  rclcpp::TimerBase::SharedPtr timer_init_;
-  void                         timerInit();
-  void                         shutdown();
+  void initialize();
+  void shutdown();
 
   // | ----------------------- parameters ----------------------- |
 
@@ -211,22 +210,19 @@ private:
 
 //}
 
-/* HwApiManager::HwApiManager(rclcpp::NodeOptions options) //{ */
+/* HwApiManager() //{ */
 
-HwApiManager::HwApiManager(rclcpp::NodeOptions options) : rclcpp::Node("hw_api_manager", options) {
+HwApiManager::HwApiManager(rclcpp::NodeOptions options) : mrs_lib::Node("hw_api_manager", options) {
 
-  RCLCPP_INFO(this->get_logger(), "constructor");
-
-  timer_init_ = create_wall_timer(std::chrono::duration<double>(0.1s), std::bind(&HwApiManager::timerInit, this));
+  this->initialize();
 }
 
 //}
 
-/* timerInit() //{ */
+/* initialize() //{ */
 
-void HwApiManager::timerInit() {
+void HwApiManager::initialize() {
 
-  node_  = this->shared_from_this();
   clock_ = node_->get_clock();
 
   cbkgrp_subs_   = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -237,7 +233,7 @@ void HwApiManager::timerInit() {
 
   // | ----------------------- load params ---------------------- |
 
-  param_loader_ = std::make_shared<mrs_lib::ParamLoader>(node_, this->get_name());
+  param_loader_ = std::make_shared<mrs_lib::ParamLoader>(node_, node_->get_name());
 
   std::vector<std::string> config_files;
   param_loader_->loadParam("configs", config_files);
@@ -583,11 +579,9 @@ void HwApiManager::timerInit() {
 
   hw_api_->initialize(node_->create_sub_node("plugin"), common_handlers_);
 
-  RCLCPP_INFO(get_logger(), "initialized");
+  RCLCPP_INFO(node_->get_logger(), "initialized");
 
   is_initialized_ = true;
-
-  timer_init_->cancel();
 }
 
 //}
