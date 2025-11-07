@@ -172,23 +172,23 @@ private:
   std::string getBodyFrameName(void);
   std::string getWorldFrameName(void);
 
-  void publishGNSS(const sensor_msgs::msg::NavSatFix& msg);
-  void publishGNSSStatus(const mrs_msgs::msg::GpsInfo& msg);
-  void publishRTK(const mrs_msgs::msg::RtkGps& msg);
-  void publishOdometry(const nav_msgs::msg::Odometry& msg);
-  void publishGroundTruth(const nav_msgs::msg::Odometry& msg);
-  void publishIMU(const sensor_msgs::msg::Imu& msg);
-  void publishDistanceSensor(const sensor_msgs::msg::Range& msg);
-  void publishAltitude(const mrs_msgs::msg::HwApiAltitude& msg);
-  void publishMagnetometerHeading(const mrs_msgs::msg::Float64Stamped& msg);
-  void publishMagneticField(const sensor_msgs::msg::MagneticField& msg);
-  void publishStatus(const mrs_msgs::msg::HwApiStatus& msg);
-  void publishRcChannels(const mrs_msgs::msg::HwApiRcChannels& msg);
-  void publishOrientation(const geometry_msgs::msg::QuaternionStamped& msg);
-  void publishPosition(const geometry_msgs::msg::PointStamped& msg);
-  void publishVelocity(const geometry_msgs::msg::Vector3Stamped& msg);
-  void publishAngularVelocity(const geometry_msgs::msg::Vector3Stamped& msg);
-  void publishBatteryState(const sensor_msgs::msg::BatteryState& msg);
+  void publishGNSS(const sensor_msgs::msg::NavSatFix &msg);
+  void publishGNSSStatus(const mrs_msgs::msg::GpsInfo &msg);
+  void publishRTK(const mrs_msgs::msg::RtkGps &msg);
+  void publishOdometry(const nav_msgs::msg::Odometry &msg);
+  void publishGroundTruth(const nav_msgs::msg::Odometry &msg);
+  void publishIMU(const sensor_msgs::msg::Imu &msg);
+  void publishDistanceSensor(const sensor_msgs::msg::Range &msg);
+  void publishAltitude(const mrs_msgs::msg::HwApiAltitude &msg);
+  void publishMagnetometerHeading(const mrs_msgs::msg::Float64Stamped &msg);
+  void publishMagneticField(const sensor_msgs::msg::MagneticField &msg);
+  void publishStatus(const mrs_msgs::msg::HwApiStatus &msg);
+  void publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg);
+  void publishOrientation(const geometry_msgs::msg::QuaternionStamped &msg);
+  void publishPosition(const geometry_msgs::msg::PointStamped &msg);
+  void publishVelocity(const geometry_msgs::msg::Vector3Stamped &msg);
+  void publishAngularVelocity(const geometry_msgs::msg::Vector3Stamped &msg);
+  void publishBatteryState(const sensor_msgs::msg::BatteryState &msg);
 
   // | ------------------------- timers ------------------------- |
 
@@ -566,12 +566,12 @@ void HwApiManager::initialize() {
     RCLCPP_INFO(node_->get_logger(), "loading the plugin '%s'", _plugin_address_.c_str());
     hw_api_ = plugin_loader_->createSharedInstance(_plugin_address_.c_str());
   }
-  catch (pluginlib::CreateClassException& ex1) {
+  catch (pluginlib::CreateClassException &ex1) {
     RCLCPP_ERROR(node_->get_logger(), "CreateClassException for the plugin '%s'", _plugin_address_.c_str());
     RCLCPP_ERROR(node_->get_logger(), "Error: %s", ex1.what());
     rclcpp::shutdown();
   }
-  catch (pluginlib::PluginlibException& ex) {
+  catch (pluginlib::PluginlibException &ex) {
     RCLCPP_ERROR(node_->get_logger(), "PluginlibException for the plugin '%s'", _plugin_address_.c_str());
     RCLCPP_ERROR(node_->get_logger(), "Error: %s", ex.what());
     rclcpp::shutdown();
@@ -897,7 +897,7 @@ std::string HwApiManager::getWorldFrameName(void) {
 
 /* publishGNSS() //{ */
 
-void HwApiManager::publishGNSS(const sensor_msgs::msg::NavSatFix& msg) {
+void HwApiManager::publishGNSS(const sensor_msgs::msg::NavSatFix &msg) {
 
   if (!is_initialized_) {
     return;
@@ -910,7 +910,7 @@ void HwApiManager::publishGNSS(const sensor_msgs::msg::NavSatFix& msg) {
 
 /* publishGNSSStatus() //{ */
 
-void HwApiManager::publishGNSSStatus(const mrs_msgs::msg::GpsInfo& msg) {
+void HwApiManager::publishGNSSStatus(const mrs_msgs::msg::GpsInfo &msg) {
 
   if (!is_initialized_) {
     return;
@@ -923,7 +923,7 @@ void HwApiManager::publishGNSSStatus(const mrs_msgs::msg::GpsInfo& msg) {
 
 /* publishRTK() //{ */
 
-void HwApiManager::publishRTK(const mrs_msgs::msg::RtkGps& msg) {
+void HwApiManager::publishRTK(const mrs_msgs::msg::RtkGps &msg) {
 
   if (!is_initialized_) {
     return;
@@ -936,7 +936,7 @@ void HwApiManager::publishRTK(const mrs_msgs::msg::RtkGps& msg) {
 
 /* publishIMU() //{ */
 
-void HwApiManager::publishIMU(const sensor_msgs::msg::Imu& msg) {
+void HwApiManager::publishIMU(const sensor_msgs::msg::Imu &msg) {
 
   if (!is_initialized_) {
     return;
@@ -949,7 +949,7 @@ void HwApiManager::publishIMU(const sensor_msgs::msg::Imu& msg) {
 
 /* publishDistanceSensor() //{ */
 
-void HwApiManager::publishDistanceSensor(const sensor_msgs::msg::Range& msg) {
+void HwApiManager::publishDistanceSensor(const sensor_msgs::msg::Range &msg) {
 
   if (!is_initialized_) {
     return;
@@ -962,7 +962,7 @@ void HwApiManager::publishDistanceSensor(const sensor_msgs::msg::Range& msg) {
 
 /* publishAltitude() //{ */
 
-void HwApiManager::publishAltitude(const mrs_msgs::msg::HwApiAltitude& msg) {
+void HwApiManager::publishAltitude(const mrs_msgs::msg::HwApiAltitude &msg) {
 
   if (!is_initialized_) {
     return;
@@ -975,7 +975,7 @@ void HwApiManager::publishAltitude(const mrs_msgs::msg::HwApiAltitude& msg) {
 
 /* publishMagnetometerHeading() //{ */
 
-void HwApiManager::publishMagnetometerHeading(const mrs_msgs::msg::Float64Stamped& msg) {
+void HwApiManager::publishMagnetometerHeading(const mrs_msgs::msg::Float64Stamped &msg) {
 
   if (!is_initialized_) {
     return;
@@ -988,7 +988,7 @@ void HwApiManager::publishMagnetometerHeading(const mrs_msgs::msg::Float64Stampe
 
 /* publishMagneticField() //{ */
 
-void HwApiManager::publishMagneticField(const sensor_msgs::msg::MagneticField& msg) {
+void HwApiManager::publishMagneticField(const sensor_msgs::msg::MagneticField &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1001,7 +1001,7 @@ void HwApiManager::publishMagneticField(const sensor_msgs::msg::MagneticField& m
 
 /* publishStatus() //{ */
 
-void HwApiManager::publishStatus(const mrs_msgs::msg::HwApiStatus& msg) {
+void HwApiManager::publishStatus(const mrs_msgs::msg::HwApiStatus &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1014,7 +1014,7 @@ void HwApiManager::publishStatus(const mrs_msgs::msg::HwApiStatus& msg) {
 
 /* publishRcChannels() //{ */
 
-void HwApiManager::publishRcChannels(const mrs_msgs::msg::HwApiRcChannels& msg) {
+void HwApiManager::publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1027,7 +1027,7 @@ void HwApiManager::publishRcChannels(const mrs_msgs::msg::HwApiRcChannels& msg) 
 
 /* publishPosition() //{ */
 
-void HwApiManager::publishPosition(const geometry_msgs::msg::PointStamped& msg) {
+void HwApiManager::publishPosition(const geometry_msgs::msg::PointStamped &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1040,7 +1040,7 @@ void HwApiManager::publishPosition(const geometry_msgs::msg::PointStamped& msg) 
 
 /* publishOrientation() //{ */
 
-void HwApiManager::publishOrientation(const geometry_msgs::msg::QuaternionStamped& msg) {
+void HwApiManager::publishOrientation(const geometry_msgs::msg::QuaternionStamped &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1053,7 +1053,7 @@ void HwApiManager::publishOrientation(const geometry_msgs::msg::QuaternionStampe
 
 /* publishVelocity() //{ */
 
-void HwApiManager::publishVelocity(const geometry_msgs::msg::Vector3Stamped& msg) {
+void HwApiManager::publishVelocity(const geometry_msgs::msg::Vector3Stamped &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1066,7 +1066,7 @@ void HwApiManager::publishVelocity(const geometry_msgs::msg::Vector3Stamped& msg
 
 /* publishAngularVelocity() //{ */
 
-void HwApiManager::publishAngularVelocity(const geometry_msgs::msg::Vector3Stamped& msg) {
+void HwApiManager::publishAngularVelocity(const geometry_msgs::msg::Vector3Stamped &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1079,7 +1079,7 @@ void HwApiManager::publishAngularVelocity(const geometry_msgs::msg::Vector3Stamp
 
 /* publishOdometry() //{ */
 
-void HwApiManager::publishOdometry(const nav_msgs::msg::Odometry& msg) {
+void HwApiManager::publishOdometry(const nav_msgs::msg::Odometry &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1092,7 +1092,7 @@ void HwApiManager::publishOdometry(const nav_msgs::msg::Odometry& msg) {
 
 /* publishGroundTruth() //{ */
 
-void HwApiManager::publishGroundTruth(const nav_msgs::msg::Odometry& msg) {
+void HwApiManager::publishGroundTruth(const nav_msgs::msg::Odometry &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1105,7 +1105,7 @@ void HwApiManager::publishGroundTruth(const nav_msgs::msg::Odometry& msg) {
 
 /* publishBatteryState() //{ */
 
-void HwApiManager::publishBatteryState(const sensor_msgs::msg::BatteryState& msg) {
+void HwApiManager::publishBatteryState(const sensor_msgs::msg::BatteryState &msg) {
 
   if (!is_initialized_) {
     return;
@@ -1116,7 +1116,7 @@ void HwApiManager::publishBatteryState(const sensor_msgs::msg::BatteryState& msg
 
 //}
 
-}  // namespace mrs_uav_hw_api
+} // namespace mrs_uav_hw_api
 
 #include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(mrs_uav_hw_api::HwApiManager)

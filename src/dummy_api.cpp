@@ -237,7 +237,7 @@ std::tuple<bool, std::string> DummyApi::callbackOffboard(void) {
 
 //}
 
-}  // namespace mrs_uav_hw_api
+} // namespace mrs_uav_hw_api
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mrs_uav_hw_api::DummyApi, mrs_uav_hw_api::MrsUavHwApi)
