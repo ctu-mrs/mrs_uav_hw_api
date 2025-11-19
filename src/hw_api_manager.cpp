@@ -11,6 +11,7 @@
 #include <mrs_lib/publisher_handler.h>
 #include <mrs_lib/timer_handler.h>
 #include <mrs_lib/service_server_handler.h>
+#include <mrs_lib/errorgraph/error_publisher.h>
 
 #include <mrs_uav_hw_api/api.h>
 #include <mrs_uav_hw_api/publishers.h>
@@ -99,6 +100,17 @@ private:
   std::string _body_frame_name_;
   std::string _world_frame_name_;
   std::string _topic_prefix_;
+
+  // | ---------------------- errorgraph --------------------- |
+
+  enum class error_type_t : uint16_t
+  {
+    version_mismatch,
+    parameter_loading,
+    not_connected,
+  };
+
+  std::unique_ptr<mrs_lib::errorgraph::ErrorPublisher> error_publisher_;
 
   // | ---------------------- param loader ---------------------- |
 
@@ -233,6 +245,8 @@ void HwApiManager::initialize() {
 
   rclcpp::on_shutdown([this]() { this->shutdown(); });
 
+  error_publisher_ = std::make_unique<mrs_lib::errorgraph::ErrorPublisher>(node_, clock_, "HwApiManager", "main");
+
   // | ----------------------- load params ---------------------- |
 
   param_loader_ = std::make_shared<mrs_lib::ParamLoader>(node_);
@@ -250,7 +264,10 @@ void HwApiManager::initialize() {
   if (_version_ != VERSION) {
 
     RCLCPP_ERROR(node_->get_logger(), "the version of the binary (%s) does not match the config file (%s), please build me!", VERSION, _version_.c_str());
-    rclcpp::shutdown();
+    error_publisher_->addGeneralError(error_type_t::version_mismatch,
+                                      "version mismatch: binary version " + std::string(VERSION) + " != config version " + _version_);
+
+    error_publisher_->flushAndShutdown();
   }
 
   param_loader_->loadParam("hw_interface_plugin", _plugin_address_);
@@ -281,7 +298,8 @@ void HwApiManager::initialize() {
 
   if (!param_loader_->loadedSuccessfully()) {
     RCLCPP_ERROR(node_->get_logger(), "could not load all parameters!");
-    rclcpp::shutdown();
+    error_publisher_->addGeneralError(error_type_t::parameter_loading, "could not load all parameters");
+    error_publisher_->flushAndShutdown();
   }
 
   // | --------------------- tf transformer --------------------- |
@@ -569,12 +587,14 @@ void HwApiManager::initialize() {
   catch (pluginlib::CreateClassException &ex1) {
     RCLCPP_ERROR(node_->get_logger(), "CreateClassException for the plugin '%s'", _plugin_address_.c_str());
     RCLCPP_ERROR(node_->get_logger(), "Error: %s", ex1.what());
-    rclcpp::shutdown();
+    error_publisher_->addOneshotError("CreateClassException for the plugin " + _plugin_address_ + ": " + std::string(ex1.what()));
+    error_publisher_->flushAndShutdown();
   }
   catch (pluginlib::PluginlibException &ex) {
     RCLCPP_ERROR(node_->get_logger(), "PluginlibException for the plugin '%s'", _plugin_address_.c_str());
     RCLCPP_ERROR(node_->get_logger(), "Error: %s", ex.what());
-    rclcpp::shutdown();
+    error_publisher_->addOneshotError("PluginlibException for the plugin " + _plugin_address_ + ": " + std::string(ex.what()));
+    error_publisher_->flushAndShutdown();
   }
 
   // | ------------------ initialize the plugin ----------------- |
@@ -837,6 +857,10 @@ void HwApiManager::timerStatus() {
   mrs_msgs::msg::HwApiStatus status = hw_api_->getStatus();
 
   ph_status_.publish(status);
+
+  if (!status.connected) {
+    error_publisher_->addGeneralError(error_type_t::not_connected, "not connected");
+  }
 
   if (status.connected) {
 

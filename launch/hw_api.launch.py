@@ -93,6 +93,9 @@ def generate_launch_description():
                     {'configs': configs},
                     {'custom_config': custom_config},
                 ],
+                remappings=[
+                    ('~/errors', 'errors'),
+                ],
             )
 
         ],
