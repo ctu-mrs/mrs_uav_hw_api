@@ -39,7 +39,7 @@ public:
    * @param node Node handle - Use this to create subscibers, publisher, etc.
    * @param common_handlers Structure pre-filled with useful variables, methods and objects that the plugin can use.
    */
-  virtual void initialize(const rclcpp::Node::SharedPtr& node, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) = 0;
+  virtual void initialize(const rclcpp::Node::SharedPtr &node, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) = 0;
 
   virtual void destroy() = 0;
 
@@ -162,7 +162,7 @@ public:
    *
    * @return tuple(succes, message)
    */
-  virtual std::tuple<bool, std::string> callbackArming(const bool& request) = 0;
+  virtual std::tuple<bool, std::string> callbackArming(const bool &request) = 0;
 
   /**
    * @brief Callback for a service call for switching the flight controller to the "offboard" mode. When in offboard mode, the flight controller is using the
@@ -178,6 +178,6 @@ public:
   virtual ~MrsUavHwApi() = default;
 };
 
-}  // namespace mrs_uav_hw_api
+} // namespace mrs_uav_hw_api
 
 #endif
