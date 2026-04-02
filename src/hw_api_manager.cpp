@@ -172,7 +172,7 @@ private:
   mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>   ph_mag_heading_;
   mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField> ph_mag_magnetic_field_;
   mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcChannels>  ph_rc_channels_;
-  mrs_lib::PublisherHandler<std_msgs::msg::UInt8>            ph_rc_rssi_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>      ph_rc_rssi_;
   mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>  ph_battery_state_;
 
   mrs_lib::PublisherHandler<geometry_msgs::msg::PointStamped>      ph_position_;
@@ -198,7 +198,7 @@ private:
   void publishMagneticField(const sensor_msgs::msg::MagneticField &msg);
   void publishStatus(const mrs_msgs::msg::HwApiStatus &msg);
   void publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg);
-  void publishRcRssi(const std_msgs::msg::UInt8 &msg);
+  void publishRcRssi(const mrs_msgs::msg::HwApiRcRssi&msg);
   void publishOrientation(const geometry_msgs::msg::QuaternionStamped &msg);
   void publishPosition(const geometry_msgs::msg::PointStamped &msg);
   void publishVelocity(const geometry_msgs::msg::Vector3Stamped &msg);
@@ -463,7 +463,7 @@ void HwApiManager::initialize() {
     opts.node          = node_;
     opts.throttle_rate = _pub_rc_channels_rate_;
 
-    ph_rc_rssi_ = mrs_lib::PublisherHandler<std_msgs::msg::UInt8>(opts, "~/rc_rssi");
+    ph_rc_rssi_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>(opts, "~/rc_rssi");
   }
 
   {
@@ -1064,7 +1064,7 @@ void HwApiManager::publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg) 
 
 /* publishRcRssi() //{ */
 
-void HwApiManager::publishRcRssi(const std_msgs::msg::UInt8 &msg) {
+void HwApiManager::publishRcRssi(const mrs_msgs::msg::HwApiRcRssi&msg) {
 
   if (!is_initialized_) {
     return;
