@@ -198,7 +198,7 @@ private:
   void publishMagneticField(const sensor_msgs::msg::MagneticField &msg);
   void publishStatus(const mrs_msgs::msg::HwApiStatus &msg);
   void publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg);
-  void publishRcRssi(const mrs_msgs::msg::HwApiRcRssi&msg);
+  void publishRcRssi(const mrs_msgs::msg::HwApiRcRssi &msg);
   void publishOrientation(const geometry_msgs::msg::QuaternionStamped &msg);
   void publishPosition(const geometry_msgs::msg::PointStamped &msg);
   void publishVelocity(const geometry_msgs::msg::Vector3Stamped &msg);
@@ -1064,7 +1064,7 @@ void HwApiManager::publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg) 
 
 /* publishRcRssi() //{ */
 
-void HwApiManager::publishRcRssi(const mrs_msgs::msg::HwApiRcRssi&msg) {
+void HwApiManager::publishRcRssi(const mrs_msgs::msg::HwApiRcRssi &msg) {
 
   if (!is_initialized_) {
     return;
