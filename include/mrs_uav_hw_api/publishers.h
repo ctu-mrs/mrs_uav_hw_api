@@ -13,6 +13,8 @@
 
 #include <mrs_msgs/msg/hw_api_status.hpp>
 #include <mrs_msgs/msg/hw_api_rc_channels.hpp>
+#include <mrs_msgs/msg/hw_api_rc_rssi.hpp>
+
 #include <mrs_msgs/msg/rtk_gps.hpp>
 #include <mrs_msgs/msg/rtk_fix_type.hpp>
 #include <mrs_msgs/msg/gps_info.hpp>
@@ -38,6 +40,7 @@ typedef std::function<void(const mrs_msgs::msg::Float64Stamped &msg)>         pu
 typedef std::function<void(const sensor_msgs::msg::MagneticField &msg)>       publishMagneticField_t;
 typedef std::function<void(const mrs_msgs::msg::HwApiStatus &msg)>            publishStatus_t;
 typedef std::function<void(const mrs_msgs::msg::HwApiRcChannels &msg)>        publishRcChannels_t;
+typedef std::function<void(const mrs_msgs::msg::HwApiRcRssi &msg)>            publishRcRssi_t;
 typedef std::function<void(const sensor_msgs::msg::BatteryState &msg)>        publishBatteryState_t;
 typedef std::function<void(const sensor_msgs::msg::Imu &msg)>                 publishIMU_t;
 typedef std::function<void(const sensor_msgs::msg::Range &msg)>               publishDistanceSensor_t;
@@ -104,6 +107,11 @@ struct Publishers_t
    * @brief Publisher for the RC Channels received by the flight controller.
    */
   publishRcChannels_t publishRcChannels;
+
+  /**
+   * @brief Publisher for the RC RSSI (Received Signal Strength Indicator) value (0-100).
+   */
+  publishRcRssi_t publishRcRssi;
 
   /**
    * @brief Publisher for the UAV battery state.

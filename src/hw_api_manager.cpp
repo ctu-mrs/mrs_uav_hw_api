@@ -27,6 +27,7 @@
 
 #include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/empty.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 #include <mrs_msgs/msg/float64_stamped.hpp>
 
 #include <pluginlib/class_loader.hpp>
@@ -171,6 +172,7 @@ private:
   mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>   ph_mag_heading_;
   mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField> ph_mag_magnetic_field_;
   mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcChannels>  ph_rc_channels_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>      ph_rc_rssi_;
   mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>  ph_battery_state_;
 
   mrs_lib::PublisherHandler<geometry_msgs::msg::PointStamped>      ph_position_;
@@ -196,6 +198,7 @@ private:
   void publishMagneticField(const sensor_msgs::msg::MagneticField &msg);
   void publishStatus(const mrs_msgs::msg::HwApiStatus &msg);
   void publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg);
+  void publishRcRssi(const mrs_msgs::msg::HwApiRcRssi &msg);
   void publishOrientation(const geometry_msgs::msg::QuaternionStamped &msg);
   void publishPosition(const geometry_msgs::msg::PointStamped &msg);
   void publishVelocity(const geometry_msgs::msg::Vector3Stamped &msg);
@@ -458,6 +461,15 @@ void HwApiManager::initialize() {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
+    opts.throttle_rate = _pub_rc_channels_rate_;
+
+    ph_rc_rssi_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>(opts, "~/rc_rssi");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
     opts.throttle_rate = _pub_battery_state_rate_;
 
     ph_battery_state_ = mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>(opts, "~/battery_state");
@@ -567,6 +579,7 @@ void HwApiManager::initialize() {
   common_handlers_->publishers.publishMagneticField       = std::bind(&HwApiManager::publishMagneticField, this, std::placeholders::_1);
   common_handlers_->publishers.publishStatus              = std::bind(&HwApiManager::publishStatus, this, std::placeholders::_1);
   common_handlers_->publishers.publishRcChannels          = std::bind(&HwApiManager::publishRcChannels, this, std::placeholders::_1);
+  common_handlers_->publishers.publishRcRssi              = std::bind(&HwApiManager::publishRcRssi, this, std::placeholders::_1);
   common_handlers_->publishers.publishBatteryState        = std::bind(&HwApiManager::publishBatteryState, this, std::placeholders::_1);
 
   common_handlers_->publishers.publishPosition        = std::bind(&HwApiManager::publishPosition, this, std::placeholders::_1);
@@ -1045,6 +1058,19 @@ void HwApiManager::publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg) 
   }
 
   ph_rc_channels_.publish(msg);
+}
+
+//}
+
+/* publishRcRssi() //{ */
+
+void HwApiManager::publishRcRssi(const mrs_msgs::msg::HwApiRcRssi &msg) {
+
+  if (!is_initialized_) {
+    return;
+  }
+
+  ph_rc_rssi_.publish(msg);
 }
 
 //}
