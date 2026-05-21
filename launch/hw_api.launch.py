@@ -93,8 +93,13 @@ def generate_launch_description():
                     {'configs': configs},
                     {'custom_config': custom_config},
                 ],
+
                 remappings=[
                     ('~/errors', 'errors'),
+                ],
+
+                extra_arguments=[
+                    {'use_intra_process_comms': True}
                 ],
             )
 
