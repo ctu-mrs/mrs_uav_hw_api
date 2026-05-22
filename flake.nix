@@ -7,12 +7,16 @@
     mrs_lib_repo.inputs.nixpkgs.follows = "nix-ros-overlay/nixpkgs";
     mrs_lib_repo.inputs.nix-ros-overlay.follows = "nix-ros-overlay";
 
+    mrs_uav_testing_repo.url = "github:ctu-mrs/mrs_uav_testing/nix";
+    mrs_uav_testing_repo.inputs.nixpkgs.follows = "nix-ros-overlay/nixpkgs";
+    mrs_uav_testing_repo.inputs.nix-ros-overlay.follows = "nix-ros-overlay";
+
     mrs_msgs_repo.url = "github:ctu-mrs/mrs_msgs/nix";
     mrs_msgs_repo.inputs.nixpkgs.follows = "nix-ros-overlay/nixpkgs";
     mrs_msgs_repo.inputs.nix-ros-overlay.follows = "nix-ros-overlay";
   };
 
-  outputs = { self, nix-ros-overlay, nixpkgs, mrs_lib_repo, mrs_msgs_repo }:
+  outputs = { self, nix-ros-overlay, nixpkgs, mrs_lib_repo, mrs_msgs_repo, mrs_uav_testing_repo }:
 
     # This automatically loops through x86_64-linux, aarch64-linux, etc.
     nix-ros-overlay.inputs.flake-utils.lib.eachDefaultSystem (system:
@@ -26,6 +30,7 @@
 
         mrs_lib_pkg = mrs_lib_repo.packages.${system}.default;
         mrs_msgs_pkg = mrs_msgs_repo.packages.${system}.default;
+        mrs_uav_testing_pkg = mrs_uav_testing_repo.packages.${system}.default;
       in {
 
         # We drop ${system} here because eachDefaultSystem handles it
@@ -63,6 +68,7 @@
             pkgs.yaml-cpp
             mrs_lib_pkg
             mrs_msgs_pkg
+            mrs_uav_testing_pkg
             pkgs.boost
           ];
         };
