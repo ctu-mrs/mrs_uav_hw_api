@@ -9,3 +9,7 @@ doc
 
 # Runtime-python
 *.pyc
+
+flake.lock
+
+result/
