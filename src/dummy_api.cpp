@@ -48,8 +48,8 @@ public:
 
   // | -------------------- service callbacks ------------------- |
 
-  std::tuple<bool, std::string> callbackArming(const bool &request);
-  std::tuple<bool, std::string> callbackOffboard(void);
+  mrs_lib::Task<std::tuple<bool, std::string>> callbackArming(const bool &request);
+  mrs_lib::Task<std::tuple<bool, std::string>> callbackOffboard(void);
 
 private:
   bool is_initialized_ = false;
@@ -221,18 +221,18 @@ void DummyApi::callbackTrackerCmd([[maybe_unused]] const mrs_msgs::msg::TrackerC
 
 /* callbackArming() //{ */
 
-std::tuple<bool, std::string> DummyApi::callbackArming([[maybe_unused]] const bool &request) {
+mrs_lib::Task<std::tuple<bool, std::string>> DummyApi::callbackArming([[maybe_unused]] const bool &request) {
 
-  return {false, "Dummy interface does not allow to arm."};
+  co_return {false, "Dummy interface does not allow to arm."};
 }
 
 //}
 
 /* callbackOffboard() //{ */
 
-std::tuple<bool, std::string> DummyApi::callbackOffboard(void) {
+mrs_lib::Task<std::tuple<bool, std::string>> DummyApi::callbackOffboard(void) {
 
-  return {false, "Dummy interface does not allow to switch to offboard."};
+  co_return {false, "Dummy interface does not allow to switch to offboard."};
 }
 
 //}
