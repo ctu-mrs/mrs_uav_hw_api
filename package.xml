@@ -35,6 +35,10 @@
   <depend>sensor_msgs</depend>
   <depend>mrs_uav_testing</depend>
 
+  <!-- Linters -->
+  <test_depend>ament_cmake_clang_format</test_depend>
+  <test_depend>ament_cmake_xmllint</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
