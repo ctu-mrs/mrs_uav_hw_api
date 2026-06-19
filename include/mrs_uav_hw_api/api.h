@@ -162,7 +162,7 @@ public:
    *
    * @return tuple(succes, message)
    */
-  virtual mrs_lib::Task<std::tuple<bool, std::string>> callbackArming(const bool &request) = 0;
+  virtual std::tuple<bool, std::string> callbackArming(const bool &request) = 0;
 
   /**
    * @brief Callback for a service call for switching the flight controller to the "offboard" mode. When in offboard mode, the flight controller is using the
@@ -170,7 +170,7 @@ public:
    *
    * @return tuple(succes, message)
    */
-  virtual mrs_lib::Task<std::tuple<bool, std::string>> callbackOffboard(void) = 0;
+  virtual std::tuple<bool, std::string> callbackOffboard(void) = 0;
 
   /**
    * @brief Destructor

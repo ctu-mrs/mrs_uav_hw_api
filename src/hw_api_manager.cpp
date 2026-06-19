@@ -218,10 +218,8 @@ private:
   mrs_lib::ServiceServerHandler<std_srvs::srv::SetBool> ss_arming_;
   mrs_lib::ServiceServerHandler<std_srvs::srv::Trigger> ss_offboard_;
 
-  mrs_lib::Task<bool> callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::Request>  request,
-                                     const std::shared_ptr<std_srvs::srv::SetBool::Response> response);
-  mrs_lib::Task<bool> callbackOffboard(const std::shared_ptr<std_srvs::srv::Trigger::Request>  request,
-                                       const std::shared_ptr<std_srvs::srv::Trigger::Response> response);
+  bool callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, const std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+  bool callbackOffboard(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, const std::shared_ptr<std_srvs::srv::Trigger::Response> response);
 
   // | ----------------------- publishers ----------------------- |
 };
@@ -244,9 +242,9 @@ void HwApiManager::initialize() {
   node_  = this_node_ptr();
   clock_ = node_->get_clock();
 
-  cbkgrp_subs_   = node_->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-  cbkgrp_ss_     = node_->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-  cbkgrp_timers_ = node_->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  cbkgrp_subs_   = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  cbkgrp_ss_     = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  cbkgrp_timers_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   rclcpp::on_shutdown([this]() { this->shutdown(); });
 
@@ -533,11 +531,11 @@ void HwApiManager::initialize() {
 
   // | --------------------- service servers -------------------- |
 
-  ss_arming_ =
-      mrs_lib::ServiceServerHandler<std_srvs::srv::SetBool>(node_, "~/arming", &HwApiManager::callbackArming, this, rclcpp::SystemDefaultsQoS(), cbkgrp_ss_);
+  ss_arming_ = mrs_lib::ServiceServerHandler<std_srvs::srv::SetBool>(
+      node_, "~/arming", std::bind(&HwApiManager::callbackArming, this, std::placeholders::_1, std::placeholders::_2), cbkgrp_ss_);
 
-  ss_offboard_ = mrs_lib::ServiceServerHandler<std_srvs::srv::Trigger>(node_, "~/offboard", &HwApiManager::callbackOffboard, this, rclcpp::SystemDefaultsQoS(),
-                                                                       cbkgrp_ss_);
+  ss_offboard_ = mrs_lib::ServiceServerHandler<std_srvs::srv::Trigger>(
+      node_, "~/offboard", std::bind(&HwApiManager::callbackOffboard, this, std::placeholders::_1, std::placeholders::_2), cbkgrp_ss_);
 
   // | ------------------------- timers ------------------------- |
 
@@ -817,42 +815,42 @@ void HwApiManager::callbackTrackerCmd(const mrs_msgs::msg::TrackerCommand::Const
 
 /* callbackArming() //{ */
 
-mrs_lib::Task<bool> HwApiManager::callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::Request>  request,
-                                                 const std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
+bool HwApiManager::callbackArming(const std::shared_ptr<std_srvs::srv::SetBool::Request>  request,
+                                  const std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
 
   if (!is_initialized_) {
-    co_return false;
+    return false;
   }
 
   RCLCPP_INFO(node_->get_logger(), "%s", request->data ? "arming" : "disarming");
 
-  auto [success, message] = co_await hw_api_->callbackArming(request->data);
+  auto [success, message] = hw_api_->callbackArming(request->data);
 
   response->success = success;
   response->message = message;
 
-  co_return true;
+  return true;
 }
 
 //}
 
 /* callbackOffboard() //{ */
 
-mrs_lib::Task<bool> HwApiManager::callbackOffboard([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
-                                                   const std::shared_ptr<std_srvs::srv::Trigger::Response>                 response) {
+bool HwApiManager::callbackOffboard([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+                                    const std::shared_ptr<std_srvs::srv::Trigger::Response>                 response) {
 
   if (!is_initialized_) {
-    co_return false;
+    return false;
   }
 
   RCLCPP_INFO(node_->get_logger(), "switching to offboard");
 
-  auto [success, message] = co_await hw_api_->callbackOffboard();
+  auto [success, message] = hw_api_->callbackOffboard();
 
   response->success = success;
   response->message = message;
 
-  co_return true;
+  return true;
 }
 
 //}
