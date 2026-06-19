@@ -76,7 +76,7 @@ def generate_launch_description():
         namespace=uav_name,
         name=namespace+'_container',
         package='rclcpp_components',
-        executable='component_container',
+        executable='component_container_mt',
         output="screen",
 
         composable_node_descriptions=[
