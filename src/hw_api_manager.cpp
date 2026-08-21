@@ -259,7 +259,11 @@ void HwApiManager::initialize() {
 
   for (auto config_file : config_files) {
     RCLCPP_INFO(node_->get_logger(), "loading config file '%s'", config_file.c_str());
-    param_loader_->addYamlFile(config_file);
+    if (!param_loader_->addYamlFile(config_file)) {
+      RCLCPP_ERROR(node_->get_logger(), "failed to load config file '%s'", config_file.c_str());
+      error_publisher_->addOneshotError("failed to load config file '" + config_file + "'");
+      error_publisher_->flushAndShutdown();
+    }
   }
 
   param_loader_->loadParam("version", _version_);
