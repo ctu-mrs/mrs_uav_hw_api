@@ -393,7 +393,7 @@ void HwApiManager::initialize() {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
-    opts.throttle_rate = _pub_gnss_rate_;
+    opts.throttle_rate = _pub_gnss_status_rate_;
 
     ph_gnss_status_ = mrs_lib::PublisherHandler<mrs_msgs::msg::GpsInfo>(opts, "~/gnss_status");
   }
