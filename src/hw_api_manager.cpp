@@ -59,6 +59,7 @@ class HwApiManager : public mrs_lib::Node {
 
 public:
   HwApiManager(rclcpp::NodeOptions options);
+  ~HwApiManager();
 
 private:
   rclcpp::Node::SharedPtr  node_;
@@ -70,8 +71,9 @@ private:
   rclcpp::CallbackGroup::SharedPtr cbkgrp_ss_;
   rclcpp::CallbackGroup::SharedPtr cbkgrp_timers_;
 
-  void initialize();
-  void shutdown();
+  void                             initialize();
+  void                             shutdown();
+  rclcpp::OnShutdownCallbackHandle shutdown_callback_handle_;
 
   // | ----------------------- parameters ----------------------- |
 
@@ -235,6 +237,14 @@ HwApiManager::HwApiManager(rclcpp::NodeOptions options) : mrs_lib::Node("hw_api_
 
 //}
 
+/* ~HwApiManager() //{ */
+
+HwApiManager::~HwApiManager() {
+  rclcpp::contexts::get_global_default_context()->remove_on_shutdown_callback(shutdown_callback_handle_);
+}
+
+//}
+
 /* initialize() //{ */
 
 void HwApiManager::initialize() {
@@ -246,7 +256,7 @@ void HwApiManager::initialize() {
   cbkgrp_ss_     = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   cbkgrp_timers_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
-  rclcpp::on_shutdown([this]() { this->shutdown(); });
+  shutdown_callback_handle_ = rclcpp::contexts::get_global_default_context()->add_on_shutdown_callback([this]() { this->shutdown(); });
 
   error_publisher_ = std::make_unique<mrs_lib::errorgraph::ErrorPublisher>(node_, clock_, "HwApiManager", "main");
 
