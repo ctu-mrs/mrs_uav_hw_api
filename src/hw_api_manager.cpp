@@ -631,6 +631,10 @@ void HwApiManager::shutdown() {
 
   std::cout << "HwApiManager: shutdown(): called" << std::endl;
 
+  if (!is_initialized_) {
+    return;
+  }
+
   timer_diagnostics_->stop();
   timer_mode_->stop();
 
