@@ -39,6 +39,7 @@ set(DEPENDENCIES
   geometry_msgs
   nav_msgs
   std_msgs
+  std_srvs
   sensor_msgs
   Eigen3
   mrs_uav_testing
