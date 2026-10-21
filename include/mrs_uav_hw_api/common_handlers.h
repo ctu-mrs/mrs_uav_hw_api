@@ -3,7 +3,6 @@
 #include <functional>
 
 #include <mrs_uav_hw_api/publishers.h>
-#include <mrs_lib/transformer.h>
 #include <mrs_lib/param_loader.h>
 
 namespace mrs_uav_hw_api
@@ -24,11 +23,6 @@ struct CommonHandlers_t
    * @brief A structure with publishers that the plugin should use to provide data to the MRS UAV System.
    */
   Publishers_t publishers;
-
-  /**
-   * @brief The mrs_lib's TF2 transformer wrapper.
-   */
-  std::shared_ptr<mrs_lib::Transformer> transformer;
 
   std::shared_ptr<mrs_lib::ParamLoader> main_param_loader;
 

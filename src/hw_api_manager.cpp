@@ -7,7 +7,6 @@
 #include <mrs_lib/node.h>
 #include <mrs_lib/param_loader.h>
 #include <mrs_lib/subscriber_handler.h>
-#include <mrs_lib/transformer.h>
 #include <mrs_lib/publisher_handler.h>
 #include <mrs_lib/timer_handler.h>
 #include <mrs_lib/service_server_handler.h>
@@ -119,10 +118,6 @@ private:
 
   std::shared_ptr<mrs_lib::ParamLoader> param_loader_;
 
-  // | ----------------------- transformer ---------------------- |
-
-  std::shared_ptr<mrs_lib::Transformer> transformer_;
-
   // | ---------------------- plugin loader --------------------- |
 
   std::unique_ptr<pluginlib::ClassLoader<mrs_uav_hw_api::MrsUavHwApi>> plugin_loader_;
@@ -130,8 +125,8 @@ private:
 
   // | --------------------- common handlers -------------------- |
 
-  // contains handlers that are shared with trackers and controllers
-  // safety area, tf transformer, scope timer logger, and bumper
+  // contains handlers that are shared with the HW API plugin
+  // publishers, param loader, and the uav name and frame getters
   std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers_;
 
   // | ----------------------- subscribers ---------------------- |
@@ -318,12 +313,6 @@ void HwApiManager::initialize() {
     error_publisher_->addGeneralError(error_type_t::parameter_loading, "could not load all parameters");
     error_publisher_->flushAndShutdown();
   }
-
-  // | --------------------- tf transformer --------------------- |
-
-  transformer_ = std::make_shared<mrs_lib::Transformer>(node_);
-  transformer_->setDefaultPrefix(_uav_name_);
-  transformer_->retryLookupNewest(true);
 
   // | ----------------------- subscribers ---------------------- |
 
@@ -576,8 +565,6 @@ void HwApiManager::initialize() {
   common_handlers_ = std::make_shared<mrs_uav_hw_api::CommonHandlers_t>();
 
   common_handlers_->main_param_loader = param_loader_;
-
-  common_handlers_->transformer = transformer_;
 
   common_handlers_->getUavName        = std::bind(&HwApiManager::getUavName, this);
   common_handlers_->getBodyFrameName  = std::bind(&HwApiManager::getBodyFrameName, this);
