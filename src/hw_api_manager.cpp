@@ -31,6 +31,8 @@
 
 #include <pluginlib/class_loader.hpp>
 
+#include <algorithm>
+
 //}
 
 /* using //{ */
@@ -205,12 +207,17 @@ private:
   // the inputs and outputs requested by the configs
   mrs_msgs::msg::HwApiCapabilities requested_capabilities_;
 
-  // the plugin's capabilities after initialize()
+  // requested and provided by the plugin, the topics exist only for these
   mrs_msgs::msg::HwApiCapabilities capabilities_;
 
+  // (config key, resolved topic)
+  typedef std::vector<std::pair<std::string, std::string>> topic_list_t;
+
   void loadRequestedCapabilities(const std::string &yaml_prefix);
-  void initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts);
-  void initOutputPublishers();
+  bool useCapability(const bool requested, bool &capability, const std::string &key, const std::string &topic, topic_list_t &disabled);
+  void initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts, topic_list_t &not_subscribed);
+  void initOutputPublishers(topic_list_t &not_published);
+  void logDisabledTopics(const topic_list_t &not_subscribed, const topic_list_t &not_published);
 
   template <typename MessageType>
   void publishOutput(const bool produced, const std::string &key, mrs_lib::PublisherHandler<MessageType> &publisher, const MessageType &msg);
@@ -487,8 +494,13 @@ void HwApiManager::initialize() {
 
   capabilities_ = hw_api_->getCapabilities();
 
-  initCommandSubscribers(shopts);
-  initOutputPublishers();
+  topic_list_t not_subscribed;
+  topic_list_t not_published;
+
+  initCommandSubscribers(shopts, not_subscribed);
+  initOutputPublishers(not_published);
+
+  logDisabledTopics(not_subscribed, not_published);
 
   RCLCPP_INFO(node_->get_logger(), "initialized");
 
@@ -774,7 +786,9 @@ void HwApiManager::timerMode() {
 
   RCLCPP_INFO_ONCE(node_->get_logger(), "timerCapabilities() spinning");
 
-  mrs_msgs::msg::HwApiCapabilities diag = hw_api_->getCapabilities();
+  mrs_msgs::msg::HwApiCapabilities diag = capabilities_;
+
+  diag.stamp = clock_->now();
 
   ph_capabilities_.publish(diag);
 }
@@ -846,42 +860,87 @@ void HwApiManager::loadRequestedCapabilities(const std::string &yaml_prefix) {
 
 //}
 
+/* useCapability() //{ */
+
+// whether to create the topic: requested and provided, otherwise collects it as disabled or warns
+bool HwApiManager::useCapability(const bool requested, bool &capability, const std::string &key, const std::string &topic, topic_list_t &disabled) {
+
+  if (!requested) {
+    disabled.push_back({key, node_->get_node_topics_interface()->resolve_topic_name(topic)});
+  } else if (!capability) {
+    RCLCPP_WARN(node_->get_logger(), "%s is requested but not provided by the plugin", key.c_str());
+  }
+
+  capability = requested && capability;
+
+  return capability;
+}
+
+//}
+
 /* initCommandSubscribers() //{ */
 
-void HwApiManager::initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts) {
+void HwApiManager::initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts, topic_list_t &not_subscribed) {
 
-  sh_actuator_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiActuatorCmd>(shopts, "~/actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
+  if (useCapability(requested_capabilities_.accepts_actuator_cmd, capabilities_.accepts_actuator_cmd, "input_mode/actuators", "~/actuator_cmd",
+                    not_subscribed)) {
+    sh_actuator_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiActuatorCmd>(shopts, "~/actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
+  }
 
-  sh_control_group_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>(shopts, "~/control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
+  if (useCapability(requested_capabilities_.accepts_control_group_cmd, capabilities_.accepts_control_group_cmd, "input_mode/control_group",
+                    "~/control_group_cmd", not_subscribed)) {
+    sh_control_group_cmd_ =
+        mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>(shopts, "~/control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
+  }
 
-  sh_attitude_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeCmd>(shopts, "~/attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
+  if (useCapability(requested_capabilities_.accepts_attitude_cmd, capabilities_.accepts_attitude_cmd, "input_mode/attitude", "~/attitude_cmd",
+                    not_subscribed)) {
+    sh_attitude_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeCmd>(shopts, "~/attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
+  }
 
-  sh_attitude_rate_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>(shopts, "~/attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
+  if (useCapability(requested_capabilities_.accepts_attitude_rate_cmd, capabilities_.accepts_attitude_rate_cmd, "input_mode/attitude_rate",
+                    "~/attitude_rate_cmd", not_subscribed)) {
+    sh_attitude_rate_cmd_ =
+        mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>(shopts, "~/attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
+  }
 
-  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd>(shopts, "~/acceleration_hdg_rate_cmd",
-                                                                                                         &HwApiManager::callbackAccelerationHdgRateCmd, this);
+  if (useCapability(requested_capabilities_.accepts_acceleration_hdg_rate_cmd, capabilities_.accepts_acceleration_hdg_rate_cmd,
+                    "input_mode/acceleration_hdg_rate", "~/acceleration_hdg_rate_cmd", not_subscribed)) {
+    sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd>(shopts, "~/acceleration_hdg_rate_cmd",
+                                                                                                           &HwApiManager::callbackAccelerationHdgRateCmd, this);
+  }
 
-  sh_acceleration_hdg_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>(shopts, "~/acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
+  if (useCapability(requested_capabilities_.accepts_acceleration_hdg_cmd, capabilities_.accepts_acceleration_hdg_cmd, "input_mode/acceleration_hdg",
+                    "~/acceleration_hdg_cmd", not_subscribed)) {
+    sh_acceleration_hdg_cmd_ =
+        mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>(shopts, "~/acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
+  }
 
-  sh_velocity_hdg_rate_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>(shopts, "~/velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
+  if (useCapability(requested_capabilities_.accepts_velocity_hdg_rate_cmd, capabilities_.accepts_velocity_hdg_rate_cmd, "input_mode/velocity_hdg_rate",
+                    "~/velocity_hdg_rate_cmd", not_subscribed)) {
+    sh_velocity_hdg_rate_cmd_ =
+        mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>(shopts, "~/velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
+  }
 
-  sh_velocity_hdg_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>(shopts, "~/velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
+  if (useCapability(requested_capabilities_.accepts_velocity_hdg_cmd, capabilities_.accepts_velocity_hdg_cmd, "input_mode/velocity_hdg", "~/velocity_hdg_cmd",
+                    not_subscribed)) {
+    sh_velocity_hdg_cmd_ =
+        mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>(shopts, "~/velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
+  }
 
-  sh_position_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
+  if (useCapability(requested_capabilities_.accepts_position_cmd, capabilities_.accepts_position_cmd, "input_mode/position", "~/position_cmd",
+                    not_subscribed)) {
+    sh_position_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
+  }
 }
 
 //}
 
 /* initOutputPublishers() //{ */
 
-void HwApiManager::initOutputPublishers() {
+void HwApiManager::initOutputPublishers(topic_list_t &not_published) {
 
-  {
+  if (useCapability(requested_capabilities_.produces_gnss, capabilities_.produces_gnss, "outputs/gnss", "~/gnss", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -890,7 +949,7 @@ void HwApiManager::initOutputPublishers() {
     ph_gnss_ = mrs_lib::PublisherHandler<sensor_msgs::msg::NavSatFix>(opts, "~/gnss");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_gnss_status, capabilities_.produces_gnss_status, "outputs/gnss_status", "~/gnss_status", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -899,7 +958,7 @@ void HwApiManager::initOutputPublishers() {
     ph_gnss_status_ = mrs_lib::PublisherHandler<mrs_msgs::msg::GpsInfo>(opts, "~/gnss_status");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_rtk, capabilities_.produces_rtk, "outputs/rtk", "~/rtk", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -908,7 +967,8 @@ void HwApiManager::initOutputPublishers() {
     ph_rtk_ = mrs_lib::PublisherHandler<mrs_msgs::msg::RtkGps>(opts, "~/rtk");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_distance_sensor, capabilities_.produces_distance_sensor, "outputs/distance_sensor", "~/distance_sensor",
+                    not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -917,7 +977,8 @@ void HwApiManager::initOutputPublishers() {
     ph_distance_sensor_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Range>(opts, "~/distance_sensor");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_magnetometer_heading, capabilities_.produces_magnetometer_heading, "outputs/magnetometer_heading",
+                    "~/mag_heading", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -926,7 +987,8 @@ void HwApiManager::initOutputPublishers() {
     ph_mag_heading_ = mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>(opts, "~/mag_heading");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_magnetic_field, capabilities_.produces_magnetic_field, "outputs/magnetic_field", "~/magnetic_field",
+                    not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -935,7 +997,7 @@ void HwApiManager::initOutputPublishers() {
     ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField>(opts, "~/magnetic_field");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_altitude, capabilities_.produces_altitude, "outputs/altitude", "~/altitude", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -944,7 +1006,7 @@ void HwApiManager::initOutputPublishers() {
     ph_altitude_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiAltitude>(opts, "~/altitude");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_imu, capabilities_.produces_imu, "outputs/imu", "~/imu", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -953,7 +1015,7 @@ void HwApiManager::initOutputPublishers() {
     ph_imu_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Imu>(opts, "~/imu");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_rc_channels, capabilities_.produces_rc_channels, "outputs/rc_channels", "~/rc_channels", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -962,7 +1024,7 @@ void HwApiManager::initOutputPublishers() {
     ph_rc_channels_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcChannels>(opts, "~/rc_channels");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_rc_rssi, capabilities_.produces_rc_rssi, "outputs/rc_rssi", "~/rc_rssi", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -971,7 +1033,8 @@ void HwApiManager::initOutputPublishers() {
     ph_rc_rssi_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>(opts, "~/rc_rssi");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_battery_state, capabilities_.produces_battery_state, "outputs/battery_state", "~/battery_state",
+                    not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -980,7 +1043,7 @@ void HwApiManager::initOutputPublishers() {
     ph_battery_state_ = mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>(opts, "~/battery_state");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_position, capabilities_.produces_position, "outputs/position", "~/position", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -989,7 +1052,7 @@ void HwApiManager::initOutputPublishers() {
     ph_position_ = mrs_lib::PublisherHandler<geometry_msgs::msg::PointStamped>(opts, "~/position");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_orientation, capabilities_.produces_orientation, "outputs/orientation", "~/orientation", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -998,7 +1061,7 @@ void HwApiManager::initOutputPublishers() {
     ph_orientation_ = mrs_lib::PublisherHandler<geometry_msgs::msg::QuaternionStamped>(opts, "~/orientation");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_velocity, capabilities_.produces_velocity, "outputs/velocity", "~/velocity", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -1007,7 +1070,8 @@ void HwApiManager::initOutputPublishers() {
     ph_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>(opts, "~/velocity");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_angular_velocity, capabilities_.produces_angular_velocity, "outputs/angular_velocity",
+                    "~/angular_velocity", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -1016,7 +1080,7 @@ void HwApiManager::initOutputPublishers() {
     ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>(opts, "~/angular_velocity");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_odometry, capabilities_.produces_odometry, "outputs/odometry", "~/odometry", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -1025,7 +1089,8 @@ void HwApiManager::initOutputPublishers() {
     ph_odometry_ = mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>(opts, "~/odometry");
   }
 
-  {
+  if (useCapability(requested_capabilities_.produces_ground_truth, capabilities_.produces_ground_truth, "outputs/ground_truth", "~/ground_truth",
+                    not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
@@ -1037,6 +1102,37 @@ void HwApiManager::initOutputPublishers() {
 
 //}
 
+/* logDisabledTopics() //{ */
+
+void HwApiManager::logDisabledTopics(const topic_list_t &not_subscribed, const topic_list_t &not_published) {
+
+  // print the topics in one column
+  int width = 0;
+
+  for (const topic_list_t *list : {&not_subscribed, &not_published}) {
+    for (const auto &[key, topic] : *list) {
+      width = std::max(width, int(key.size()) + 1);
+    }
+  }
+
+  auto logList = [&](const std::string &header, const topic_list_t &list) {
+    if (list.empty()) {
+      return;
+    }
+
+    RCLCPP_INFO(node_->get_logger(), "%s", header.c_str());
+
+    for (const auto &[key, topic] : list) {
+      RCLCPP_INFO(node_->get_logger(), "  %-*s %s", width, (key + ":").c_str(), topic.c_str());
+    }
+  };
+
+  logList("disabled in the config, not subscribing to:", not_subscribed);
+  logList("disabled in the config, not publishing:", not_published);
+}
+
+//}
+
 // | ----------------------- publishers ----------------------- |
 
 /* publishOutput() //{ */
@@ -1044,9 +1140,9 @@ void HwApiManager::initOutputPublishers() {
 template <typename MessageType>
 void HwApiManager::publishOutput(const bool produced, const std::string &key, mrs_lib::PublisherHandler<MessageType> &publisher, const MessageType &msg) {
 
-  // only what the plugin declared in its capabilities
+  // only what is requested and provided
   if (!produced) {
-    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the plugin publishes '%s', which is not in its capabilities, dropping it", key.c_str());
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the plugin publishes '%s', which is not requested or not provided, dropping it", key.c_str());
     return;
   }
 
