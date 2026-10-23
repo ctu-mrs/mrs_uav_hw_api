@@ -205,9 +205,15 @@ private:
   // the inputs and outputs requested by the configs
   mrs_msgs::msg::HwApiCapabilities requested_capabilities_;
 
+  // the plugin's capabilities after initialize()
+  mrs_msgs::msg::HwApiCapabilities capabilities_;
+
   void loadRequestedCapabilities(const std::string &yaml_prefix);
   void initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts);
   void initOutputPublishers();
+
+  template <typename MessageType>
+  void publishOutput(const bool produced, const std::string &key, mrs_lib::PublisherHandler<MessageType> &publisher, const MessageType &msg);
 
   // | ------------------------- timers ------------------------- |
 
@@ -478,6 +484,8 @@ void HwApiManager::initialize() {
   hw_api_->initialize(plugin_node, common_handlers_);
 
   // | -------------------- plugin's topics --------------------- |
+
+  capabilities_ = hw_api_->getCapabilities();
 
   initCommandSubscribers(shopts);
   initOutputPublishers();
@@ -1031,6 +1039,22 @@ void HwApiManager::initOutputPublishers() {
 
 // | ----------------------- publishers ----------------------- |
 
+/* publishOutput() //{ */
+
+template <typename MessageType>
+void HwApiManager::publishOutput(const bool produced, const std::string &key, mrs_lib::PublisherHandler<MessageType> &publisher, const MessageType &msg) {
+
+  // only what the plugin declared in its capabilities
+  if (!produced) {
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the plugin publishes '%s', which is not in its capabilities, dropping it", key.c_str());
+    return;
+  }
+
+  publisher.publish(msg);
+}
+
+//}
+
 /* publishGNSS() //{ */
 
 void HwApiManager::publishGNSS(const sensor_msgs::msg::NavSatFix &msg) {
@@ -1039,7 +1063,7 @@ void HwApiManager::publishGNSS(const sensor_msgs::msg::NavSatFix &msg) {
     return;
   }
 
-  ph_gnss_.publish(msg);
+  publishOutput(capabilities_.produces_gnss, "outputs/gnss", ph_gnss_, msg);
 }
 
 //}
@@ -1052,7 +1076,7 @@ void HwApiManager::publishGNSSStatus(const mrs_msgs::msg::GpsInfo &msg) {
     return;
   }
 
-  ph_gnss_status_.publish(msg);
+  publishOutput(capabilities_.produces_gnss_status, "outputs/gnss_status", ph_gnss_status_, msg);
 }
 
 //}
@@ -1065,7 +1089,7 @@ void HwApiManager::publishRTK(const mrs_msgs::msg::RtkGps &msg) {
     return;
   }
 
-  ph_rtk_.publish(msg);
+  publishOutput(capabilities_.produces_rtk, "outputs/rtk", ph_rtk_, msg);
 }
 
 //}
@@ -1078,7 +1102,7 @@ void HwApiManager::publishIMU(const sensor_msgs::msg::Imu &msg) {
     return;
   }
 
-  ph_imu_.publish(msg);
+  publishOutput(capabilities_.produces_imu, "outputs/imu", ph_imu_, msg);
 }
 
 //}
@@ -1091,7 +1115,7 @@ void HwApiManager::publishDistanceSensor(const sensor_msgs::msg::Range &msg) {
     return;
   }
 
-  ph_distance_sensor_.publish(msg);
+  publishOutput(capabilities_.produces_distance_sensor, "outputs/distance_sensor", ph_distance_sensor_, msg);
 }
 
 //}
@@ -1104,7 +1128,7 @@ void HwApiManager::publishAltitude(const mrs_msgs::msg::HwApiAltitude &msg) {
     return;
   }
 
-  ph_altitude_.publish(msg);
+  publishOutput(capabilities_.produces_altitude, "outputs/altitude", ph_altitude_, msg);
 }
 
 //}
@@ -1117,7 +1141,7 @@ void HwApiManager::publishMagnetometerHeading(const mrs_msgs::msg::Float64Stampe
     return;
   }
 
-  ph_mag_heading_.publish(msg);
+  publishOutput(capabilities_.produces_magnetometer_heading, "outputs/magnetometer_heading", ph_mag_heading_, msg);
 }
 
 //}
@@ -1130,7 +1154,7 @@ void HwApiManager::publishMagneticField(const sensor_msgs::msg::MagneticField &m
     return;
   }
 
-  ph_mag_magnetic_field_.publish(msg);
+  publishOutput(capabilities_.produces_magnetic_field, "outputs/magnetic_field", ph_mag_magnetic_field_, msg);
 }
 
 //}
@@ -1156,7 +1180,7 @@ void HwApiManager::publishRcChannels(const mrs_msgs::msg::HwApiRcChannels &msg) 
     return;
   }
 
-  ph_rc_channels_.publish(msg);
+  publishOutput(capabilities_.produces_rc_channels, "outputs/rc_channels", ph_rc_channels_, msg);
 }
 
 //}
@@ -1169,7 +1193,7 @@ void HwApiManager::publishRcRssi(const mrs_msgs::msg::HwApiRcRssi &msg) {
     return;
   }
 
-  ph_rc_rssi_.publish(msg);
+  publishOutput(capabilities_.produces_rc_rssi, "outputs/rc_rssi", ph_rc_rssi_, msg);
 }
 
 //}
@@ -1182,7 +1206,7 @@ void HwApiManager::publishPosition(const geometry_msgs::msg::PointStamped &msg) 
     return;
   }
 
-  ph_position_.publish(msg);
+  publishOutput(capabilities_.produces_position, "outputs/position", ph_position_, msg);
 }
 
 //}
@@ -1195,7 +1219,7 @@ void HwApiManager::publishOrientation(const geometry_msgs::msg::QuaternionStampe
     return;
   }
 
-  ph_orientation_.publish(msg);
+  publishOutput(capabilities_.produces_orientation, "outputs/orientation", ph_orientation_, msg);
 }
 
 //}
@@ -1208,7 +1232,7 @@ void HwApiManager::publishVelocity(const geometry_msgs::msg::Vector3Stamped &msg
     return;
   }
 
-  ph_velocity_.publish(msg);
+  publishOutput(capabilities_.produces_velocity, "outputs/velocity", ph_velocity_, msg);
 }
 
 //}
@@ -1221,7 +1245,7 @@ void HwApiManager::publishAngularVelocity(const geometry_msgs::msg::Vector3Stamp
     return;
   }
 
-  ph_angular_velocity_.publish(msg);
+  publishOutput(capabilities_.produces_angular_velocity, "outputs/angular_velocity", ph_angular_velocity_, msg);
 }
 
 //}
@@ -1234,7 +1258,7 @@ void HwApiManager::publishOdometry(const nav_msgs::msg::Odometry &msg) {
     return;
   }
 
-  ph_odometry_.publish(msg);
+  publishOutput(capabilities_.produces_odometry, "outputs/odometry", ph_odometry_, msg);
 }
 
 //}
@@ -1247,7 +1271,7 @@ void HwApiManager::publishGroundTruth(const nav_msgs::msg::Odometry &msg) {
     return;
   }
 
-  ph_ground_truth_.publish(msg);
+  publishOutput(capabilities_.produces_ground_truth, "outputs/ground_truth", ph_ground_truth_, msg);
 }
 
 //}
@@ -1260,7 +1284,7 @@ void HwApiManager::publishBatteryState(const sensor_msgs::msg::BatteryState &msg
     return;
   }
 
-  ph_battery_state_.publish(msg);
+  publishOutput(capabilities_.produces_battery_state, "outputs/battery_state", ph_battery_state_, msg);
 }
 
 //}
