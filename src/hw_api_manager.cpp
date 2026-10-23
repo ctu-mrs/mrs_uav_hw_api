@@ -202,6 +202,9 @@ private:
   void publishAngularVelocity(const geometry_msgs::msg::Vector3Stamped &msg);
   void publishBatteryState(const sensor_msgs::msg::BatteryState &msg);
 
+  void initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts);
+  void initOutputPublishers();
+
   // | ------------------------- timers ------------------------- |
 
   std::shared_ptr<TimerType> timer_diagnostics_;
@@ -347,30 +350,6 @@ void HwApiManager::initialize() {
   shopts.autostart                           = true;
   shopts.subscription_options.callback_group = cbkgrp_subs_;
 
-  sh_actuator_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiActuatorCmd>(shopts, "~/actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
-
-  sh_control_group_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>(shopts, "~/control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
-
-  sh_attitude_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeCmd>(shopts, "~/attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
-
-  sh_attitude_rate_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>(shopts, "~/attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
-
-  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd>(shopts, "~/acceleration_hdg_rate_cmd",
-                                                                                                         &HwApiManager::callbackAccelerationHdgRateCmd, this);
-
-  sh_acceleration_hdg_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>(shopts, "~/acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
-
-  sh_velocity_hdg_rate_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>(shopts, "~/velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
-
-  sh_velocity_hdg_cmd_ =
-      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>(shopts, "~/velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
-
-  sh_position_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
-
   sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(shopts, "/" + _uav_name_ + "/control_manager/tracker_cmd",
                                                                               &HwApiManager::callbackTrackerCmd, this);
 
@@ -399,159 +378,6 @@ void HwApiManager::initialize() {
     opts.node = node_;
 
     ph_connected_ = mrs_lib::PublisherHandler<std_msgs::msg::Empty>(opts, "~/connected");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_gnss_rate_;
-
-    ph_gnss_ = mrs_lib::PublisherHandler<sensor_msgs::msg::NavSatFix>(opts, "~/gnss");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_gnss_status_rate_;
-
-    ph_gnss_status_ = mrs_lib::PublisherHandler<mrs_msgs::msg::GpsInfo>(opts, "~/gnss_status");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_rtk_rate_;
-
-    ph_rtk_ = mrs_lib::PublisherHandler<mrs_msgs::msg::RtkGps>(opts, "~/rtk");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_distance_sensor_rate_;
-
-    ph_distance_sensor_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Range>(opts, "~/distance_sensor");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_mag_heading_rate_;
-
-    ph_mag_heading_ = mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>(opts, "~/mag_heading");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_mag_magnetic_field_rate_;
-
-    ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField>(opts, "~/magnetic_field");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_altitude_rate_;
-
-    ph_altitude_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiAltitude>(opts, "~/altitude");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_imu_rate_;
-
-    ph_imu_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Imu>(opts, "~/imu");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_rc_channels_rate_;
-
-    ph_rc_channels_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcChannels>(opts, "~/rc_channels");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_rc_channels_rate_;
-
-    ph_rc_rssi_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>(opts, "~/rc_rssi");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_battery_state_rate_;
-
-    ph_battery_state_ = mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>(opts, "~/battery_state");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_position_rate_;
-
-    ph_position_ = mrs_lib::PublisherHandler<geometry_msgs::msg::PointStamped>(opts, "~/position");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_orientation_rate_;
-
-    ph_orientation_ = mrs_lib::PublisherHandler<geometry_msgs::msg::QuaternionStamped>(opts, "~/orientation");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_velocity_rate_;
-
-    ph_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>(opts, "~/velocity");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_angular_velocity_rate_;
-
-    ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>(opts, "~/angular_velocity");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_odometry_rate_;
-
-    ph_odometry_ = mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>(opts, "~/odometry");
-  }
-
-  {
-    mrs_lib::PublisherHandlerOptions opts;
-
-    opts.node          = node_;
-    opts.throttle_rate = _pub_ground_truth_rate_;
-
-    ph_ground_truth_ = mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>(opts, "~/ground_truth");
   }
 
   // | --------------------- service servers -------------------- |
@@ -642,6 +468,11 @@ void HwApiManager::initialize() {
   common_handlers_->plugin_param_loader->copyYamls(*param_loader_);
 
   hw_api_->initialize(plugin_node, common_handlers_);
+
+  // | -------------------- plugin's topics --------------------- |
+
+  initCommandSubscribers(shopts);
+  initOutputPublishers();
 
   RCLCPP_INFO(node_->get_logger(), "initialized");
 
@@ -959,6 +790,197 @@ std::string HwApiManager::getBodyFrameName(void) {
 std::string HwApiManager::getWorldFrameName(void) {
 
   return _world_frame_name_;
+}
+
+//}
+
+/* initCommandSubscribers() //{ */
+
+void HwApiManager::initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts) {
+
+  sh_actuator_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiActuatorCmd>(shopts, "~/actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
+
+  sh_control_group_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>(shopts, "~/control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
+
+  sh_attitude_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeCmd>(shopts, "~/attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
+
+  sh_attitude_rate_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>(shopts, "~/attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
+
+  sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd>(shopts, "~/acceleration_hdg_rate_cmd",
+                                                                                                         &HwApiManager::callbackAccelerationHdgRateCmd, this);
+
+  sh_acceleration_hdg_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>(shopts, "~/acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
+
+  sh_velocity_hdg_rate_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>(shopts, "~/velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
+
+  sh_velocity_hdg_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>(shopts, "~/velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
+
+  sh_position_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
+}
+
+//}
+
+/* initOutputPublishers() //{ */
+
+void HwApiManager::initOutputPublishers() {
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_gnss_rate_;
+
+    ph_gnss_ = mrs_lib::PublisherHandler<sensor_msgs::msg::NavSatFix>(opts, "~/gnss");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_gnss_status_rate_;
+
+    ph_gnss_status_ = mrs_lib::PublisherHandler<mrs_msgs::msg::GpsInfo>(opts, "~/gnss_status");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_rtk_rate_;
+
+    ph_rtk_ = mrs_lib::PublisherHandler<mrs_msgs::msg::RtkGps>(opts, "~/rtk");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_distance_sensor_rate_;
+
+    ph_distance_sensor_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Range>(opts, "~/distance_sensor");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_mag_heading_rate_;
+
+    ph_mag_heading_ = mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>(opts, "~/mag_heading");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_mag_magnetic_field_rate_;
+
+    ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField>(opts, "~/magnetic_field");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_altitude_rate_;
+
+    ph_altitude_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiAltitude>(opts, "~/altitude");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_imu_rate_;
+
+    ph_imu_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Imu>(opts, "~/imu");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_rc_channels_rate_;
+
+    ph_rc_channels_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcChannels>(opts, "~/rc_channels");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_rc_channels_rate_;
+
+    ph_rc_rssi_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>(opts, "~/rc_rssi");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_battery_state_rate_;
+
+    ph_battery_state_ = mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>(opts, "~/battery_state");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_position_rate_;
+
+    ph_position_ = mrs_lib::PublisherHandler<geometry_msgs::msg::PointStamped>(opts, "~/position");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_orientation_rate_;
+
+    ph_orientation_ = mrs_lib::PublisherHandler<geometry_msgs::msg::QuaternionStamped>(opts, "~/orientation");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_velocity_rate_;
+
+    ph_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>(opts, "~/velocity");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_angular_velocity_rate_;
+
+    ph_angular_velocity_ = mrs_lib::PublisherHandler<geometry_msgs::msg::Vector3Stamped>(opts, "~/angular_velocity");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_odometry_rate_;
+
+    ph_odometry_ = mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>(opts, "~/odometry");
+  }
+
+  {
+    mrs_lib::PublisherHandlerOptions opts;
+
+    opts.node          = node_;
+    opts.throttle_rate = _pub_ground_truth_rate_;
+
+    ph_ground_truth_ = mrs_lib::PublisherHandler<nav_msgs::msg::Odometry>(opts, "~/ground_truth");
+  }
 }
 
 //}
