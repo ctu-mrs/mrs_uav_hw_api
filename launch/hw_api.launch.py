@@ -90,6 +90,7 @@ def generate_launch_description():
     # #} end of env-based params
 
     configs = [
+        this_pkg_path + '/config/dummy_api.yaml',
         this_pkg_path + '/config/hw_api.yaml',
     ]
 

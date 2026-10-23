@@ -202,6 +202,10 @@ private:
   void publishAngularVelocity(const geometry_msgs::msg::Vector3Stamped &msg);
   void publishBatteryState(const sensor_msgs::msg::BatteryState &msg);
 
+  // the inputs and outputs requested by the configs
+  mrs_msgs::msg::HwApiCapabilities requested_capabilities_;
+
+  void loadRequestedCapabilities(const std::string &yaml_prefix);
   void initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts);
   void initOutputPublishers();
 
@@ -332,6 +336,8 @@ void HwApiManager::initialize() {
   param_loader_->loadParam(yaml_prefix + "publish_rate/angular_velocity", _pub_angular_velocity_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/odometry", _pub_odometry_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/ground_truth", _pub_ground_truth_rate_);
+
+  loadRequestedCapabilities(yaml_prefix);
 
   if (!param_loader_->loadedSuccessfully()) {
     RCLCPP_ERROR(node_->get_logger(), "could not load all parameters!");
@@ -466,6 +472,8 @@ void HwApiManager::initialize() {
 
   common_handlers_->plugin_param_loader = std::make_shared<mrs_lib::ParamLoader>(plugin_node, _plugin_address_);
   common_handlers_->plugin_param_loader->copyYamls(*param_loader_);
+
+  common_handlers_->requested_capabilities = requested_capabilities_;
 
   hw_api_->initialize(plugin_node, common_handlers_);
 
@@ -790,6 +798,42 @@ std::string HwApiManager::getBodyFrameName(void) {
 std::string HwApiManager::getWorldFrameName(void) {
 
   return _world_frame_name_;
+}
+
+//}
+
+/* loadRequestedCapabilities() //{ */
+
+// compulsory, the plugin's config defines all of them
+void HwApiManager::loadRequestedCapabilities(const std::string &yaml_prefix) {
+
+  param_loader_->loadParam(yaml_prefix + "input_mode/actuators", requested_capabilities_.accepts_actuator_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/control_group", requested_capabilities_.accepts_control_group_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/attitude_rate", requested_capabilities_.accepts_attitude_rate_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/attitude", requested_capabilities_.accepts_attitude_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/acceleration_hdg_rate", requested_capabilities_.accepts_acceleration_hdg_rate_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/acceleration_hdg", requested_capabilities_.accepts_acceleration_hdg_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/velocity_hdg_rate", requested_capabilities_.accepts_velocity_hdg_rate_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/velocity_hdg", requested_capabilities_.accepts_velocity_hdg_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/position", requested_capabilities_.accepts_position_cmd);
+
+  param_loader_->loadParam(yaml_prefix + "outputs/distance_sensor", requested_capabilities_.produces_distance_sensor);
+  param_loader_->loadParam(yaml_prefix + "outputs/gnss", requested_capabilities_.produces_gnss);
+  param_loader_->loadParam(yaml_prefix + "outputs/gnss_status", requested_capabilities_.produces_gnss_status);
+  param_loader_->loadParam(yaml_prefix + "outputs/rtk", requested_capabilities_.produces_rtk);
+  param_loader_->loadParam(yaml_prefix + "outputs/ground_truth", requested_capabilities_.produces_ground_truth);
+  param_loader_->loadParam(yaml_prefix + "outputs/imu", requested_capabilities_.produces_imu);
+  param_loader_->loadParam(yaml_prefix + "outputs/altitude", requested_capabilities_.produces_altitude);
+  param_loader_->loadParam(yaml_prefix + "outputs/magnetometer_heading", requested_capabilities_.produces_magnetometer_heading);
+  param_loader_->loadParam(yaml_prefix + "outputs/magnetic_field", requested_capabilities_.produces_magnetic_field);
+  param_loader_->loadParam(yaml_prefix + "outputs/rc_channels", requested_capabilities_.produces_rc_channels);
+  param_loader_->loadParam(yaml_prefix + "outputs/rc_rssi", requested_capabilities_.produces_rc_rssi);
+  param_loader_->loadParam(yaml_prefix + "outputs/battery_state", requested_capabilities_.produces_battery_state);
+  param_loader_->loadParam(yaml_prefix + "outputs/position", requested_capabilities_.produces_position);
+  param_loader_->loadParam(yaml_prefix + "outputs/orientation", requested_capabilities_.produces_orientation);
+  param_loader_->loadParam(yaml_prefix + "outputs/velocity", requested_capabilities_.produces_velocity);
+  param_loader_->loadParam(yaml_prefix + "outputs/angular_velocity", requested_capabilities_.produces_angular_velocity);
+  param_loader_->loadParam(yaml_prefix + "outputs/odometry", requested_capabilities_.produces_odometry);
 }
 
 //}
