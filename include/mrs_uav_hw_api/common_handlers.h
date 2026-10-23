@@ -27,6 +27,11 @@ struct CommonHandlers_t
   std::shared_ptr<mrs_lib::ParamLoader> main_param_loader;
 
   /**
+   * @brief Param loader for the plugin's params, which are under mrs_uav_hw_api/plugin/ in the config files.
+   */
+  std::shared_ptr<mrs_lib::ParamLoader> plugin_param_loader;
+
+  /**
    * @brief Method for obtaining the current "UAV_NAME" (the one set from the $UAV_NAME env variable).
    */
   getUavName_t getUavName;
