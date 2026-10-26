@@ -31,7 +31,10 @@
 
 #include <pluginlib/class_loader.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 #include <algorithm>
+#include <set>
 
 //}
 
@@ -213,6 +216,8 @@ private:
   // (config key, resolved topic)
   typedef std::vector<std::pair<std::string, std::string>> topic_list_t;
 
+  bool checkConfigKeys(const std::vector<std::string> &config_files);
+  bool hasYamlKey(const YAML::Node &yaml, const std::string &path);
   void loadRequestedCapabilities(const std::string &yaml_prefix);
   bool useCapability(const bool requested, bool &capability, const std::string &key, const std::string &topic, topic_list_t &disabled);
   void initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts, topic_list_t &not_subscribed);
@@ -307,6 +312,10 @@ void HwApiManager::initialize() {
       error_publisher_->addOneshotError("failed to load config file '" + config_file + "'");
       error_publisher_->flushAndShutdown();
     }
+  }
+
+  if (!checkConfigKeys(config_files)) {
+    error_publisher_->flushAndShutdown();
   }
 
   // params from the launch file are not prefixed
@@ -820,6 +829,121 @@ std::string HwApiManager::getBodyFrameName(void) {
 std::string HwApiManager::getWorldFrameName(void) {
 
   return _world_frame_name_;
+}
+
+//}
+
+/* checkConfigKeys() //{ */
+
+// the param loader ignores the keys nobody loads, so an obsolete or misspelled HW API parameter would be ignored silently
+bool HwApiManager::checkConfigKeys(const std::vector<std::string> &config_files) {
+
+  // old name -> new name, remove once no config uses the old layout
+  const std::vector<std::pair<std::string, std::string>> obsolete_params = {
+      {"plugin", "mrs_uav_hw_api/plugin"},
+      {"plugin/input_mode", "mrs_uav_hw_api/input_mode"},
+      {"plugin/outputs", "mrs_uav_hw_api/outputs"},
+      {"input_mode", "mrs_uav_hw_api/input_mode"},
+      {"outputs", "mrs_uav_hw_api/outputs"},
+      {"hw_interface_plugin", "mrs_uav_hw_api/hw_interface_plugin"},
+      {"publish_rate", "mrs_uav_hw_api/publish_rate"},
+      {"timers", "mrs_uav_hw_api/timers"},
+      {"body_frame_name", "mrs_uav_hw_api/body_frame_name"},
+      {"world_frame_name", "mrs_uav_hw_api/world_frame_name"},
+      {"mrs_uav_hw_api/plugin/input_mode", "mrs_uav_hw_api/input_mode"},
+      {"mrs_uav_hw_api/plugin/outputs", "mrs_uav_hw_api/outputs"},
+  };
+
+  const std::set<std::string> hw_api_keys = {
+      "version", "hw_interface_plugin", "body_frame_name", "world_frame_name", "timers", "publish_rate", "input_mode", "outputs", "plugin"};
+
+  const std::set<std::string> input_mode_keys = {"actuators",        "control_group",     "attitude_rate", "attitude", "acceleration_hdg_rate",
+                                                 "acceleration_hdg", "velocity_hdg_rate", "velocity_hdg",  "position"};
+
+  const std::set<std::string> outputs_keys = {
+      "distance_sensor", "gnss",        "gnss_status", "rtk",           "ground_truth", "imu",         "altitude", "magnetometer_heading",
+      "magnetic_field",  "rc_channels", "rc_rssi",     "battery_state", "position",     "orientation", "velocity", "angular_velocity",
+      "odometry"};
+
+  bool success = true;
+
+  const auto report = [&](const std::string &message) {
+    RCLCPP_ERROR(node_->get_logger(), "%s", message.c_str());
+    error_publisher_->addOneshotError(message);
+    success = false;
+  };
+
+  for (const auto &config_file : config_files) {
+
+    YAML::Node config;
+
+    try {
+      config = YAML::LoadFile(config_file);
+    }
+    catch (const YAML::Exception &e) {
+      report("could not parse '" + config_file + "': " + e.what());
+      continue;
+    }
+
+    if (!config.IsMap()) {
+      continue;
+    }
+
+    for (const auto &[old_name, new_name] : obsolete_params) {
+      if (hasYamlKey(config, old_name)) {
+        report("obsolete parameter '" + old_name + "' found in '" + config_file + "', use '" + new_name + "' instead");
+      }
+    }
+
+    // a missing key gives an invalid node: test it with operator bool before calling IsMap() on it
+    const auto check_known = [&](const YAML::Node &yaml, const std::set<std::string> &known, const std::string &prefix) {
+      if (!yaml || !yaml.IsMap()) {
+        return;
+      }
+
+      for (const auto &item : yaml) {
+
+        // a complex key (e.g. '[a, b]') does not convert to a string, print it as yaml
+        const std::string key = item.first.IsScalar() ? item.first.Scalar() : YAML::Dump(item.first);
+
+        if (!known.count(key)) {
+          report("unknown parameter '" + prefix + key + "' found in '" + config_file + "'");
+        }
+      }
+    };
+
+    const YAML::Node hw_api = config["mrs_uav_hw_api"];
+
+    check_known(hw_api, hw_api_keys, "mrs_uav_hw_api/");
+
+    if (hw_api && hw_api.IsMap()) {
+      check_known(hw_api["input_mode"], input_mode_keys, "mrs_uav_hw_api/input_mode/");
+      check_known(hw_api["outputs"], outputs_keys, "mrs_uav_hw_api/outputs/");
+    }
+  }
+
+  return success;
+}
+
+//}
+
+/* hasYamlKey() //{ */
+
+// whether the yaml has the key path "a/b/c"
+bool HwApiManager::hasYamlKey(const YAML::Node &yaml, const std::string &path) {
+
+  if (!yaml.IsMap()) {
+    return false;
+  }
+
+  const size_t     separator = path.find('/');
+  const YAML::Node child     = yaml[path.substr(0, separator)];
+
+  if (!child) {
+    return false;
+  }
+
+  return separator == std::string::npos || hasYamlKey(child, path.substr(separator + 1));
 }
 
 //}
