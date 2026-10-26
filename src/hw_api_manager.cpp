@@ -216,6 +216,9 @@ private:
   // (config key, resolved topic)
   typedef std::vector<std::pair<std::string, std::string>> topic_list_t;
 
+  // a requested input or output is not provided by the plugin
+  bool not_provided_ = false;
+
   bool checkConfigKeys(const std::vector<std::string> &config_files);
   bool hasYamlKey(const YAML::Node &yaml, const std::string &path);
   void loadRequestedCapabilities(const std::string &yaml_prefix);
@@ -510,6 +513,10 @@ void HwApiManager::initialize() {
   initOutputPublishers(not_published);
 
   logDisabledTopics(not_subscribed, not_published);
+
+  if (not_provided_) {
+    error_publisher_->flushAndShutdown();
+  }
 
   RCLCPP_INFO(node_->get_logger(), "initialized");
 
@@ -986,13 +993,16 @@ void HwApiManager::loadRequestedCapabilities(const std::string &yaml_prefix) {
 
 /* useCapability() //{ */
 
-// whether to create the topic: requested and provided, otherwise collects it as disabled or warns
+// whether to create the topic: requested and provided, otherwise collects it as disabled or reports it as not provided
 bool HwApiManager::useCapability(const bool requested, bool &capability, const std::string &key, const std::string &topic, topic_list_t &disabled) {
 
   if (!requested) {
     disabled.push_back({key, node_->get_node_topics_interface()->resolve_topic_name(topic)});
   } else if (!capability) {
-    RCLCPP_WARN(node_->get_logger(), "%s is requested but not provided by the plugin", key.c_str());
+    const std::string message = key + " is requested but not provided by the plugin";
+    RCLCPP_ERROR(node_->get_logger(), "%s", message.c_str());
+    error_publisher_->addOneshotError(message);
+    not_provided_ = true;
   }
 
   capability = requested && capability;
