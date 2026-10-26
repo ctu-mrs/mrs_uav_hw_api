@@ -381,9 +381,6 @@ void HwApiManager::initialize() {
   shopts.autostart                           = true;
   shopts.subscription_options.callback_group = cbkgrp_subs_;
 
-  sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(shopts, "/" + _uav_name_ + "/control_manager/tracker_cmd",
-                                                                              &HwApiManager::callbackTrackerCmd, this);
-
   // | ----------------------- publishers ----------------------- |
 
 
@@ -865,7 +862,7 @@ bool HwApiManager::checkConfigKeys(const std::vector<std::string> &config_files)
       "version", "hw_interface_plugin", "body_frame_name", "world_frame_name", "timers", "publish_rate", "input_mode", "outputs", "plugin"};
 
   const std::set<std::string> input_mode_keys = {"actuators",        "control_group",     "attitude_rate", "attitude", "acceleration_hdg_rate",
-                                                 "acceleration_hdg", "velocity_hdg_rate", "velocity_hdg",  "position"};
+                                                 "acceleration_hdg", "velocity_hdg_rate", "velocity_hdg",  "position", "feedforward"};
 
   const std::set<std::string> outputs_keys = {
       "distance_sensor", "gnss",        "gnss_status", "rtk",           "ground_truth", "imu",         "altitude", "magnetometer_heading",
@@ -969,6 +966,7 @@ void HwApiManager::loadRequestedCapabilities(const std::string &yaml_prefix) {
   param_loader_->loadParam(yaml_prefix + "input_mode/velocity_hdg_rate", requested_capabilities_.accepts_velocity_hdg_rate_cmd);
   param_loader_->loadParam(yaml_prefix + "input_mode/velocity_hdg", requested_capabilities_.accepts_velocity_hdg_cmd);
   param_loader_->loadParam(yaml_prefix + "input_mode/position", requested_capabilities_.accepts_position_cmd);
+  param_loader_->loadParam(yaml_prefix + "input_mode/feedforward", requested_capabilities_.accepts_feedforward);
 
   param_loader_->loadParam(yaml_prefix + "outputs/distance_sensor", requested_capabilities_.produces_distance_sensor);
   param_loader_->loadParam(yaml_prefix + "outputs/gnss", requested_capabilities_.produces_gnss);
@@ -1065,6 +1063,13 @@ void HwApiManager::initCommandSubscribers(const mrs_lib::SubscriberHandlerOption
   if (useCapability(requested_capabilities_.accepts_position_cmd, capabilities_.accepts_position_cmd, "input_mode/position", "~/position_cmd",
                     not_subscribed)) {
     sh_position_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
+  }
+
+  const std::string tracker_cmd_topic = "/" + _uav_name_ + "/control_manager/tracker_cmd";
+
+  if (useCapability(requested_capabilities_.accepts_feedforward, capabilities_.accepts_feedforward, "input_mode/feedforward", tracker_cmd_topic,
+                    not_subscribed)) {
+    sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(shopts, tracker_cmd_topic, &HwApiManager::callbackTrackerCmd, this);
   }
 }
 
