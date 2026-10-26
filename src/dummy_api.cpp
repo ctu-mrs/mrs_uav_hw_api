@@ -104,15 +104,15 @@ void DummyApi::destroy() {
 
 mrs_msgs::msg::HwApiStatus DummyApi::getStatus() {
 
-  mrs_msgs::msg::HwApiStatus diag;
+  mrs_msgs::msg::HwApiStatus status;
 
-  diag.stamp = clock_->now();
+  status.stamp = clock_->now();
 
-  diag.armed     = false;
-  diag.offboard  = false;
-  diag.connected = false;
+  status.armed     = false;
+  status.offboard  = false;
+  status.connected = false;
 
-  return diag;
+  return status;
 }
 
 //}

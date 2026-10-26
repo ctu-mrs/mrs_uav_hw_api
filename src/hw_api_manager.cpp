@@ -81,8 +81,8 @@ private:
 
   // | ----------------------- parameters ----------------------- |
 
-  double _timer_diagnostics_rate_;
-  double _timer_mode_rate_;
+  double _timer_status_rate_;
+  double _timer_capabilities_rate_;
 
   double _pub_gnss_rate_;
   double _pub_gnss_status_rate_;
@@ -90,8 +90,8 @@ private:
   double _pub_imu_rate_;
   double _pub_distance_sensor_rate_;
   double _pub_altitude_rate_;
-  double _pub_mag_heading_rate_;
-  double _pub_mag_magnetic_field_rate_;
+  double _pub_magnetometer_heading_rate_;
+  double _pub_magnetic_field_rate_;
   double _pub_rc_channels_rate_;
   double _pub_battery_state_rate_;
 
@@ -171,8 +171,8 @@ private:
   mrs_lib::PublisherHandler<sensor_msgs::msg::Imu>           ph_imu_;
   mrs_lib::PublisherHandler<sensor_msgs::msg::Range>         ph_distance_sensor_;
   mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiAltitude>    ph_altitude_;
-  mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>   ph_mag_heading_;
-  mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField> ph_mag_magnetic_field_;
+  mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>   ph_magnetometer_heading_;
+  mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField> ph_magnetic_field_;
   mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcChannels>  ph_rc_channels_;
   mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>      ph_rc_rssi_;
   mrs_lib::PublisherHandler<sensor_msgs::msg::BatteryState>  ph_battery_state_;
@@ -232,11 +232,11 @@ private:
 
   // | ------------------------- timers ------------------------- |
 
-  std::shared_ptr<TimerType> timer_diagnostics_;
-  std::shared_ptr<TimerType> timer_mode_;
+  std::shared_ptr<TimerType> timer_status_;
+  std::shared_ptr<TimerType> timer_capabilities_;
 
   void timerStatus(void);
-  void timerMode(void);
+  void timerCapabilities(void);
 
   // | --------------------- service servers -------------------- |
 
@@ -341,8 +341,8 @@ void HwApiManager::initialize() {
   param_loader_->loadParam(yaml_prefix + "hw_interface_plugin", _plugin_address_);
   param_loader_->loadParam(yaml_prefix + "body_frame_name", _body_frame_name_);
   param_loader_->loadParam(yaml_prefix + "world_frame_name", _world_frame_name_);
-  param_loader_->loadParam(yaml_prefix + "timers/diagnostics/rate", _timer_diagnostics_rate_);
-  param_loader_->loadParam(yaml_prefix + "timers/mode/rate", _timer_mode_rate_);
+  param_loader_->loadParam(yaml_prefix + "timers/status/rate", _timer_status_rate_);
+  param_loader_->loadParam(yaml_prefix + "timers/capabilities/rate", _timer_capabilities_rate_);
 
   param_loader_->loadParam(yaml_prefix + "publish_rate/gnss", _pub_gnss_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/gnss_status", _pub_gnss_status_rate_);
@@ -350,8 +350,8 @@ void HwApiManager::initialize() {
   param_loader_->loadParam(yaml_prefix + "publish_rate/imu", _pub_imu_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/distance_sensor", _pub_distance_sensor_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/altitude", _pub_altitude_rate_);
-  param_loader_->loadParam(yaml_prefix + "publish_rate/mag_heading", _pub_mag_heading_rate_);
-  param_loader_->loadParam(yaml_prefix + "publish_rate/mag_magnetic_field", _pub_mag_magnetic_field_rate_);
+  param_loader_->loadParam(yaml_prefix + "publish_rate/magnetometer_heading", _pub_magnetometer_heading_rate_);
+  param_loader_->loadParam(yaml_prefix + "publish_rate/magnetic_field", _pub_magnetic_field_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/rc_channels", _pub_rc_channels_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/battery_state", _pub_battery_state_rate_);
 
@@ -427,13 +427,13 @@ void HwApiManager::initialize() {
   {
     std::function<void()> callback_fcn = std::bind(&HwApiManager::timerStatus, this);
 
-    timer_diagnostics_ = std::make_shared<TimerType>(opts, rclcpp::Rate(_timer_diagnostics_rate_, clock_), callback_fcn);
+    timer_status_ = std::make_shared<TimerType>(opts, rclcpp::Rate(_timer_status_rate_, clock_), callback_fcn);
   }
 
   {
-    std::function<void()> callback_fcn = std::bind(&HwApiManager::timerMode, this);
+    std::function<void()> callback_fcn = std::bind(&HwApiManager::timerCapabilities, this);
 
-    timer_mode_ = std::make_shared<TimerType>(opts, rclcpp::Rate(_timer_mode_rate_, clock_), callback_fcn);
+    timer_capabilities_ = std::make_shared<TimerType>(opts, rclcpp::Rate(_timer_capabilities_rate_, clock_), callback_fcn);
   }
 
   // | ---------------- bind the common handlers ---------------- |
@@ -532,8 +532,8 @@ void HwApiManager::shutdown() {
     return;
   }
 
-  timer_diagnostics_->stop();
-  timer_mode_->stop();
+  timer_status_->stop();
+  timer_capabilities_->stop();
 
   std::cout << "HwApiManager: calling destroy() on hw api plugin" << std::endl;
 
@@ -789,9 +789,9 @@ void HwApiManager::timerStatus() {
 
 //}
 
-/* timerMode() //{ */
+/* timerCapabilities() //{ */
 
-void HwApiManager::timerMode() {
+void HwApiManager::timerCapabilities() {
 
   if (!is_initialized_) {
     return;
@@ -799,11 +799,11 @@ void HwApiManager::timerMode() {
 
   RCLCPP_INFO_ONCE(node_->get_logger(), "timerCapabilities() spinning");
 
-  mrs_msgs::msg::HwApiCapabilities diag = capabilities_;
+  mrs_msgs::msg::HwApiCapabilities capabilities = capabilities_;
 
-  diag.stamp = clock_->now();
+  capabilities.stamp = clock_->now();
 
-  ph_capabilities_.publish(diag);
+  ph_capabilities_.publish(capabilities);
 }
 
 //}
@@ -857,6 +857,10 @@ bool HwApiManager::checkConfigKeys(const std::vector<std::string> &config_files)
       {"mrs_uav_hw_api/plugin/input_mode", "mrs_uav_hw_api/inputs"},
       {"mrs_uav_hw_api/plugin/outputs", "mrs_uav_hw_api/outputs"},
       {"mrs_uav_hw_api/input_mode", "mrs_uav_hw_api/inputs"},
+      {"mrs_uav_hw_api/publish_rate/mag_heading", "mrs_uav_hw_api/publish_rate/magnetometer_heading"},
+      {"mrs_uav_hw_api/publish_rate/mag_magnetic_field", "mrs_uav_hw_api/publish_rate/magnetic_field"},
+      {"mrs_uav_hw_api/timers/diagnostics", "mrs_uav_hw_api/timers/status"},
+      {"mrs_uav_hw_api/timers/mode", "mrs_uav_hw_api/timers/capabilities"},
   };
 
   const std::set<std::string> hw_api_keys = {
@@ -1117,13 +1121,13 @@ void HwApiManager::initOutputPublishers(topic_list_t &not_published) {
   }
 
   if (useCapability(requested_capabilities_.produces_magnetometer_heading, capabilities_.produces_magnetometer_heading, "outputs/magnetometer_heading",
-                    "~/mag_heading", not_published)) {
+                    "~/magnetometer_heading", not_published)) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
-    opts.throttle_rate = _pub_mag_heading_rate_;
+    opts.throttle_rate = _pub_magnetometer_heading_rate_;
 
-    ph_mag_heading_ = mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>(opts, "~/mag_heading");
+    ph_magnetometer_heading_ = mrs_lib::PublisherHandler<mrs_msgs::msg::Float64Stamped>(opts, "~/magnetometer_heading");
   }
 
   if (useCapability(requested_capabilities_.produces_magnetic_field, capabilities_.produces_magnetic_field, "outputs/magnetic_field", "~/magnetic_field",
@@ -1131,9 +1135,9 @@ void HwApiManager::initOutputPublishers(topic_list_t &not_published) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
-    opts.throttle_rate = _pub_mag_magnetic_field_rate_;
+    opts.throttle_rate = _pub_magnetic_field_rate_;
 
-    ph_mag_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField>(opts, "~/magnetic_field");
+    ph_magnetic_field_ = mrs_lib::PublisherHandler<sensor_msgs::msg::MagneticField>(opts, "~/magnetic_field");
   }
 
   if (useCapability(requested_capabilities_.produces_altitude, capabilities_.produces_altitude, "outputs/altitude", "~/altitude", not_published)) {
@@ -1376,7 +1380,7 @@ void HwApiManager::publishMagnetometerHeading(const mrs_msgs::msg::Float64Stampe
     return;
   }
 
-  publishOutput(capabilities_.produces_magnetometer_heading, "outputs/magnetometer_heading", ph_mag_heading_, msg);
+  publishOutput(capabilities_.produces_magnetometer_heading, "outputs/magnetometer_heading", ph_magnetometer_heading_, msg);
 }
 
 //}
@@ -1389,7 +1393,7 @@ void HwApiManager::publishMagneticField(const sensor_msgs::msg::MagneticField &m
     return;
   }
 
-  publishOutput(capabilities_.produces_magnetic_field, "outputs/magnetic_field", ph_mag_magnetic_field_, msg);
+  publishOutput(capabilities_.produces_magnetic_field, "outputs/magnetic_field", ph_magnetic_field_, msg);
 }
 
 //}

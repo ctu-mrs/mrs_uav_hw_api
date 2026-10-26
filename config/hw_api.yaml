@@ -6,9 +6,9 @@ mrs_uav_hw_api:
   world_frame_name: "hw_api_world"
 
   timers:
-    diagnostics:
+    status:
       rate: 1.0 # [Hz]
-    mode:
+    capabilities:
       rate: 1.0 # [Hz]
 
   publish_rate:
@@ -16,8 +16,8 @@ mrs_uav_hw_api:
     gnss_status: 10.0
     rtk: 50.0
     distance_sensor: 250.0
-    mag_heading: 100.0
-    mag_magnetic_field: 100.0
+    magnetometer_heading: 100.0
+    magnetic_field: 100.0
     altitude: 100.0
     imu: 500.0
     rc_channels: 100.0
