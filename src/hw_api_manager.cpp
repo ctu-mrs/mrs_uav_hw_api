@@ -845,24 +845,25 @@ bool HwApiManager::checkConfigKeys(const std::vector<std::string> &config_files)
   // old name -> new name, remove once no config uses the old layout
   const std::vector<std::pair<std::string, std::string>> obsolete_params = {
       {"plugin", "mrs_uav_hw_api/plugin"},
-      {"plugin/input_mode", "mrs_uav_hw_api/input_mode"},
+      {"plugin/input_mode", "mrs_uav_hw_api/inputs"},
       {"plugin/outputs", "mrs_uav_hw_api/outputs"},
-      {"input_mode", "mrs_uav_hw_api/input_mode"},
+      {"input_mode", "mrs_uav_hw_api/inputs"},
       {"outputs", "mrs_uav_hw_api/outputs"},
       {"hw_interface_plugin", "mrs_uav_hw_api/hw_interface_plugin"},
       {"publish_rate", "mrs_uav_hw_api/publish_rate"},
       {"timers", "mrs_uav_hw_api/timers"},
       {"body_frame_name", "mrs_uav_hw_api/body_frame_name"},
       {"world_frame_name", "mrs_uav_hw_api/world_frame_name"},
-      {"mrs_uav_hw_api/plugin/input_mode", "mrs_uav_hw_api/input_mode"},
+      {"mrs_uav_hw_api/plugin/input_mode", "mrs_uav_hw_api/inputs"},
       {"mrs_uav_hw_api/plugin/outputs", "mrs_uav_hw_api/outputs"},
+      {"mrs_uav_hw_api/input_mode", "mrs_uav_hw_api/inputs"},
   };
 
   const std::set<std::string> hw_api_keys = {
-      "version", "hw_interface_plugin", "body_frame_name", "world_frame_name", "timers", "publish_rate", "input_mode", "outputs", "plugin"};
+      "version", "hw_interface_plugin", "body_frame_name", "world_frame_name", "timers", "publish_rate", "inputs", "outputs", "plugin"};
 
-  const std::set<std::string> input_mode_keys = {"actuators",        "control_group",     "attitude_rate", "attitude", "acceleration_hdg_rate",
-                                                 "acceleration_hdg", "velocity_hdg_rate", "velocity_hdg",  "position", "feedforward"};
+  const std::set<std::string> inputs_keys = {"actuators",        "control_group",     "attitude_rate", "attitude", "acceleration_hdg_rate",
+                                             "acceleration_hdg", "velocity_hdg_rate", "velocity_hdg",  "position", "feedforward"};
 
   const std::set<std::string> outputs_keys = {
       "distance_sensor", "gnss",        "gnss_status", "rtk",           "ground_truth", "imu",         "altitude", "magnetometer_heading",
@@ -910,7 +911,10 @@ bool HwApiManager::checkConfigKeys(const std::vector<std::string> &config_files)
         // a complex key (e.g. '[a, b]') does not convert to a string, print it as yaml
         const std::string key = item.first.IsScalar() ? item.first.Scalar() : YAML::Dump(item.first);
 
-        if (!known.count(key)) {
+        // reported as obsolete already
+        const bool obsolete = std::any_of(obsolete_params.begin(), obsolete_params.end(), [&](const auto &p) { return p.first == prefix + key; });
+
+        if (!known.count(key) && !obsolete) {
           report("unknown parameter '" + prefix + key + "' found in '" + config_file + "'");
         }
       }
@@ -921,7 +925,7 @@ bool HwApiManager::checkConfigKeys(const std::vector<std::string> &config_files)
     check_known(hw_api, hw_api_keys, "mrs_uav_hw_api/");
 
     if (hw_api && hw_api.IsMap()) {
-      check_known(hw_api["input_mode"], input_mode_keys, "mrs_uav_hw_api/input_mode/");
+      check_known(hw_api["inputs"], inputs_keys, "mrs_uav_hw_api/inputs/");
       check_known(hw_api["outputs"], outputs_keys, "mrs_uav_hw_api/outputs/");
     }
   }
@@ -957,16 +961,16 @@ bool HwApiManager::hasYamlKey(const YAML::Node &yaml, const std::string &path) {
 // compulsory, the plugin's config defines all of them
 void HwApiManager::loadRequestedCapabilities(const std::string &yaml_prefix) {
 
-  param_loader_->loadParam(yaml_prefix + "input_mode/actuators", requested_capabilities_.accepts_actuator_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/control_group", requested_capabilities_.accepts_control_group_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/attitude_rate", requested_capabilities_.accepts_attitude_rate_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/attitude", requested_capabilities_.accepts_attitude_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/acceleration_hdg_rate", requested_capabilities_.accepts_acceleration_hdg_rate_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/acceleration_hdg", requested_capabilities_.accepts_acceleration_hdg_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/velocity_hdg_rate", requested_capabilities_.accepts_velocity_hdg_rate_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/velocity_hdg", requested_capabilities_.accepts_velocity_hdg_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/position", requested_capabilities_.accepts_position_cmd);
-  param_loader_->loadParam(yaml_prefix + "input_mode/feedforward", requested_capabilities_.accepts_feedforward);
+  param_loader_->loadParam(yaml_prefix + "inputs/actuators", requested_capabilities_.accepts_actuator_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/control_group", requested_capabilities_.accepts_control_group_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/attitude_rate", requested_capabilities_.accepts_attitude_rate_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/attitude", requested_capabilities_.accepts_attitude_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/acceleration_hdg_rate", requested_capabilities_.accepts_acceleration_hdg_rate_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/acceleration_hdg", requested_capabilities_.accepts_acceleration_hdg_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/velocity_hdg_rate", requested_capabilities_.accepts_velocity_hdg_rate_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/velocity_hdg", requested_capabilities_.accepts_velocity_hdg_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/position", requested_capabilities_.accepts_position_cmd);
+  param_loader_->loadParam(yaml_prefix + "inputs/feedforward", requested_capabilities_.accepts_feedforward);
 
   param_loader_->loadParam(yaml_prefix + "outputs/distance_sensor", requested_capabilities_.produces_distance_sensor);
   param_loader_->loadParam(yaml_prefix + "outputs/gnss", requested_capabilities_.produces_gnss);
@@ -1014,61 +1018,57 @@ bool HwApiManager::useCapability(const bool requested, bool &capability, const s
 
 void HwApiManager::initCommandSubscribers(const mrs_lib::SubscriberHandlerOptions &shopts, topic_list_t &not_subscribed) {
 
-  if (useCapability(requested_capabilities_.accepts_actuator_cmd, capabilities_.accepts_actuator_cmd, "input_mode/actuators", "~/actuator_cmd",
-                    not_subscribed)) {
+  if (useCapability(requested_capabilities_.accepts_actuator_cmd, capabilities_.accepts_actuator_cmd, "inputs/actuators", "~/actuator_cmd", not_subscribed)) {
     sh_actuator_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiActuatorCmd>(shopts, "~/actuator_cmd", &HwApiManager::callbackActuatorCmd, this);
   }
 
-  if (useCapability(requested_capabilities_.accepts_control_group_cmd, capabilities_.accepts_control_group_cmd, "input_mode/control_group",
-                    "~/control_group_cmd", not_subscribed)) {
+  if (useCapability(requested_capabilities_.accepts_control_group_cmd, capabilities_.accepts_control_group_cmd, "inputs/control_group", "~/control_group_cmd",
+                    not_subscribed)) {
     sh_control_group_cmd_ =
         mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiControlGroupCmd>(shopts, "~/control_group_cmd", &HwApiManager::callbackControlGroupCmd, this);
   }
 
-  if (useCapability(requested_capabilities_.accepts_attitude_cmd, capabilities_.accepts_attitude_cmd, "input_mode/attitude", "~/attitude_cmd",
-                    not_subscribed)) {
+  if (useCapability(requested_capabilities_.accepts_attitude_cmd, capabilities_.accepts_attitude_cmd, "inputs/attitude", "~/attitude_cmd", not_subscribed)) {
     sh_attitude_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeCmd>(shopts, "~/attitude_cmd", &HwApiManager::callbackAttitudeCmd, this);
   }
 
-  if (useCapability(requested_capabilities_.accepts_attitude_rate_cmd, capabilities_.accepts_attitude_rate_cmd, "input_mode/attitude_rate",
-                    "~/attitude_rate_cmd", not_subscribed)) {
+  if (useCapability(requested_capabilities_.accepts_attitude_rate_cmd, capabilities_.accepts_attitude_rate_cmd, "inputs/attitude_rate", "~/attitude_rate_cmd",
+                    not_subscribed)) {
     sh_attitude_rate_cmd_ =
         mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAttitudeRateCmd>(shopts, "~/attitude_rate_cmd", &HwApiManager::callbackAttitudeRateCmd, this);
   }
 
-  if (useCapability(requested_capabilities_.accepts_acceleration_hdg_rate_cmd, capabilities_.accepts_acceleration_hdg_rate_cmd,
-                    "input_mode/acceleration_hdg_rate", "~/acceleration_hdg_rate_cmd", not_subscribed)) {
+  if (useCapability(requested_capabilities_.accepts_acceleration_hdg_rate_cmd, capabilities_.accepts_acceleration_hdg_rate_cmd, "inputs/acceleration_hdg_rate",
+                    "~/acceleration_hdg_rate_cmd", not_subscribed)) {
     sh_acceleration_hdg_rate_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgRateCmd>(shopts, "~/acceleration_hdg_rate_cmd",
                                                                                                            &HwApiManager::callbackAccelerationHdgRateCmd, this);
   }
 
-  if (useCapability(requested_capabilities_.accepts_acceleration_hdg_cmd, capabilities_.accepts_acceleration_hdg_cmd, "input_mode/acceleration_hdg",
+  if (useCapability(requested_capabilities_.accepts_acceleration_hdg_cmd, capabilities_.accepts_acceleration_hdg_cmd, "inputs/acceleration_hdg",
                     "~/acceleration_hdg_cmd", not_subscribed)) {
     sh_acceleration_hdg_cmd_ =
         mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiAccelerationHdgCmd>(shopts, "~/acceleration_hdg_cmd", &HwApiManager::callbackAccelerationHdgCmd, this);
   }
 
-  if (useCapability(requested_capabilities_.accepts_velocity_hdg_rate_cmd, capabilities_.accepts_velocity_hdg_rate_cmd, "input_mode/velocity_hdg_rate",
+  if (useCapability(requested_capabilities_.accepts_velocity_hdg_rate_cmd, capabilities_.accepts_velocity_hdg_rate_cmd, "inputs/velocity_hdg_rate",
                     "~/velocity_hdg_rate_cmd", not_subscribed)) {
     sh_velocity_hdg_rate_cmd_ =
         mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgRateCmd>(shopts, "~/velocity_hdg_rate_cmd", &HwApiManager::callbackVelocityHdgRateCmd, this);
   }
 
-  if (useCapability(requested_capabilities_.accepts_velocity_hdg_cmd, capabilities_.accepts_velocity_hdg_cmd, "input_mode/velocity_hdg", "~/velocity_hdg_cmd",
+  if (useCapability(requested_capabilities_.accepts_velocity_hdg_cmd, capabilities_.accepts_velocity_hdg_cmd, "inputs/velocity_hdg", "~/velocity_hdg_cmd",
                     not_subscribed)) {
     sh_velocity_hdg_cmd_ =
         mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>(shopts, "~/velocity_hdg_cmd", &HwApiManager::callbackVelocityHdgCmd, this);
   }
 
-  if (useCapability(requested_capabilities_.accepts_position_cmd, capabilities_.accepts_position_cmd, "input_mode/position", "~/position_cmd",
-                    not_subscribed)) {
+  if (useCapability(requested_capabilities_.accepts_position_cmd, capabilities_.accepts_position_cmd, "inputs/position", "~/position_cmd", not_subscribed)) {
     sh_position_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
   }
 
   const std::string tracker_cmd_topic = "/" + _uav_name_ + "/control_manager/tracker_cmd";
 
-  if (useCapability(requested_capabilities_.accepts_feedforward, capabilities_.accepts_feedforward, "input_mode/feedforward", tracker_cmd_topic,
-                    not_subscribed)) {
+  if (useCapability(requested_capabilities_.accepts_feedforward, capabilities_.accepts_feedforward, "inputs/feedforward", tracker_cmd_topic, not_subscribed)) {
     sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(shopts, tracker_cmd_topic, &HwApiManager::callbackTrackerCmd, this);
   }
 }

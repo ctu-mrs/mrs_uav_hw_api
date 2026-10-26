@@ -147,7 +147,7 @@ public:
   /**
    * @brief Callback for the incoming TrackerCommand. The tracker command is provided by the reference generator of the MRS UAV System and it can be used as a
    * source for feed forward control action.
-   * It is called only when input_mode/feedforward is requested and the plugin sets accepts_feedforward.
+   * It is called only when inputs/feedforward is requested and the plugin sets accepts_feedforward.
    *
    * @param msg incoming ROS message
    */
