@@ -561,7 +561,7 @@ void HwApiManager::callbackActuatorCmd(const mrs_msgs::msg::HwApiActuatorCmd::Co
   bool result = hw_api_->callbackActuatorCmd(msg);
 
   if (!result) {
-    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'control group' command!");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "the currently loaded HW API does not implement the 'actuator' command!");
   }
 }
 
