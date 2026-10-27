@@ -43,9 +43,9 @@ def generate_test_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([
                     PathJoinSubstitution([
-                        FindPackageShare('mrs_multirotor_simulator'),
+                        FindPackageShare('mrs_uav_hw_api'),
                             'launch',
-                            'hw_api.launch.py'
+                            'dummy_api.launch.py'
                         ])
                     ]),
                 )
