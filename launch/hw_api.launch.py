@@ -51,6 +51,28 @@ def generate_launch_description():
 
     # #} end of custom_config
 
+    # #{ platform_config
+
+    platform_config = LaunchConfiguration('platform_config')
+
+    ld.add_action(DeclareLaunchArgument(
+        'platform_config',
+        default_value="",
+        description="Path to the platform configuration file. The path can be absolute, starting with '/' or relative to the current working directory",
+    ))
+
+    # behaviour:
+    #     platform_config == "" => platform_config: ""
+    #     platform_config == "/<path>" => platform_config: "/<path>"
+    #     platform_config == "<path>" => platform_config: "$(pwd)/<path>"
+    platform_config = IfElseSubstitution(
+            condition=PythonExpression(['"', platform_config, '" != "" and ', 'not "', platform_config, '".startswith("/")']),
+            if_value=PathJoinSubstitution([EnvironmentVariable('PWD'), platform_config]),
+            else_value=platform_config
+    )
+
+    # #} end of platform_config
+
     # #{ env-based params
 
     # #{ uav_name
@@ -68,6 +90,7 @@ def generate_launch_description():
     # #} end of env-based params
 
     configs = [
+        this_pkg_path + '/config/dummy_api.yaml',
         this_pkg_path + '/config/hw_api.yaml',
     ]
 
@@ -92,6 +115,7 @@ def generate_launch_description():
                     {"topic_prefix": ["/", uav_name]},
                     {'configs': configs},
                     {'custom_config': custom_config},
+                    {'platform_config': platform_config},
                 ],
 
                 remappings=[

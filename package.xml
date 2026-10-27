@@ -35,6 +35,7 @@
   <depend>std_srvs</depend>
   <depend>nav_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>yaml-cpp</depend>
   <depend>mrs_uav_testing</depend>
 
   <!-- Linters -->

@@ -52,7 +52,8 @@ public:
   virtual mrs_msgs::msg::HwApiStatus getStatus() = 0;
 
   /**
-   * @brief Method for obtaining the capabilities of the HW API Plugin. This method will be called repeatedly (after initialize()).
+   * @brief Method for obtaining the capabilities of the HW API Plugin. It is called once, right after initialize().
+   * They must be a subset of CommonHandlers_t::requested_capabilities; the HW API creates the topics only for them.
    *
    * @return The capabilities ROS message.
    */
@@ -146,6 +147,7 @@ public:
   /**
    * @brief Callback for the incoming TrackerCommand. The tracker command is provided by the reference generator of the MRS UAV System and it can be used as a
    * source for feed forward control action.
+   * It is called only when inputs/feedforward is requested and the plugin sets accepts_feedforward.
    *
    * @param msg incoming ROS message
    */

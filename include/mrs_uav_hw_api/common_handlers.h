@@ -4,6 +4,7 @@
 
 #include <mrs_uav_hw_api/publishers.h>
 #include <mrs_lib/param_loader.h>
+#include <mrs_msgs/msg/hw_api_capabilities.hpp>
 
 namespace mrs_uav_hw_api
 {
@@ -25,6 +26,16 @@ struct CommonHandlers_t
   Publishers_t publishers;
 
   std::shared_ptr<mrs_lib::ParamLoader> main_param_loader;
+
+  /**
+   * @brief Param loader for the plugin's params, which are under mrs_uav_hw_api/plugin/ in the config files.
+   */
+  std::shared_ptr<mrs_lib::ParamLoader> plugin_param_loader;
+
+  /**
+   * @brief The inputs and outputs the configs request, filled before initialize(). The plugin provides a subset and returns it from getCapabilities().
+   */
+  mrs_msgs::msg::HwApiCapabilities requested_capabilities;
 
   /**
    * @brief Method for obtaining the current "UAV_NAME" (the one set from the $UAV_NAME env variable).
