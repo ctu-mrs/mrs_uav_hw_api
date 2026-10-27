@@ -828,7 +828,7 @@ std::string HwApiManager::getBodyFrameName(void) {
 
 //}
 
-/* getBodyFrameName() //{ */
+/* getWorldFrameName() //{ */
 
 std::string HwApiManager::getWorldFrameName(void) {
 
