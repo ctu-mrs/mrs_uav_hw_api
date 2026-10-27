@@ -93,6 +93,7 @@ private:
   double _pub_magnetometer_heading_rate_;
   double _pub_magnetic_field_rate_;
   double _pub_rc_channels_rate_;
+  double _pub_rc_rssi_rate_;
   double _pub_battery_state_rate_;
 
   double _pub_position_rate_;
@@ -353,6 +354,7 @@ void HwApiManager::initialize() {
   param_loader_->loadParam(yaml_prefix + "publish_rate/magnetometer_heading", _pub_magnetometer_heading_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/magnetic_field", _pub_magnetic_field_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/rc_channels", _pub_rc_channels_rate_);
+  param_loader_->loadParam(yaml_prefix + "publish_rate/rc_rssi", _pub_rc_rssi_rate_);
   param_loader_->loadParam(yaml_prefix + "publish_rate/battery_state", _pub_battery_state_rate_);
 
   param_loader_->loadParam(yaml_prefix + "publish_rate/position", _pub_position_rate_);
@@ -1171,7 +1173,7 @@ void HwApiManager::initOutputPublishers(topic_list_t &not_published) {
     mrs_lib::PublisherHandlerOptions opts;
 
     opts.node          = node_;
-    opts.throttle_rate = _pub_rc_channels_rate_;
+    opts.throttle_rate = _pub_rc_rssi_rate_;
 
     ph_rc_rssi_ = mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiRcRssi>(opts, "~/rc_rssi");
   }

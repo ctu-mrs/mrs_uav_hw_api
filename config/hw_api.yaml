@@ -21,6 +21,7 @@ mrs_uav_hw_api:
     altitude: 100.0
     imu: 500.0
     rc_channels: 100.0
+    rc_rssi: 100.0
     battery_state: 100.0
     position: 250.0
     orientation: 250.0
