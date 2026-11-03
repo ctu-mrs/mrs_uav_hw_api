@@ -45,7 +45,7 @@ public:
 
   /**
    * @brief Method for acquiring the HW API plugin's status. This method will be called repeatedly to obtain the status, which will be publisher by the plugin
-   * manager.
+   * manager. The stamp has to be the time of the copy, the manager drops a status not newer than the last published one.
    *
    * @return The status ROS message.
    */
