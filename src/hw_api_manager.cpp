@@ -34,6 +34,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
+#include <mutex>
 #include <set>
 
 //}
@@ -163,6 +164,8 @@ private:
   // | ----------------------- publishers ----------------------- |
 
   mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiStatus>       ph_status_;
+  std::mutex                                                  mutex_status_publish_;
+  builtin_interfaces::msg::Time                               last_status_stamp_; // guarded by mutex_status_publish_
   mrs_lib::PublisherHandler<std_msgs::msg::Empty>             ph_connected_;
   mrs_lib::PublisherHandler<mrs_msgs::msg::HwApiCapabilities> ph_capabilities_;
 
@@ -776,7 +779,7 @@ void HwApiManager::timerStatus() {
 
   mrs_msgs::msg::HwApiStatus status = hw_api_->getStatus();
 
-  ph_status_.publish(status);
+  publishStatus(status);
 
   if (!status.connected) {
     error_publisher_->addGeneralError(error_type_t::not_connected, "not connected");
@@ -1407,6 +1410,23 @@ void HwApiManager::publishStatus(const mrs_msgs::msg::HwApiStatus &msg) {
   if (!is_initialized_) {
     return;
   }
+
+  // the plugin and timerStatus() publish from different threads
+  std::scoped_lock lock(mutex_status_publish_);
+
+  const rclcpp::Duration age = rclcpp::Time(last_status_stamp_) - rclcpp::Time(msg.stamp);
+
+  // not newer than the last published status (sim time stamps can be equal)
+  const bool outdated = age >= rclcpp::Duration(0, 0);
+
+  // e.g., sim time reset
+  const bool clock_jumped_back = age >= rclcpp::Duration::from_seconds(1.0 / _timer_status_rate_);
+
+  if (outdated && !clock_jumped_back) {
+    return;
+  }
+
+  last_status_stamp_ = msg.stamp;
 
   ph_status_.publish(msg);
 }
